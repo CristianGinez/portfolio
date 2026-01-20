@@ -1,9 +1,15 @@
 /* src/components/react/CubeSlider/CubeSlider.css */
 .swiper-slide {
-  /* Asegura que el slide ocupe todo el espacio y centre contenido */
-  display: flex !important; 
+  display: flex !important;
   justify-content: center;
   align-items: center;
   background-position: center;
   background-size: cover;
+  /* Asegura que no tenga eventos bloqueados */
+  pointer-events: auto !important; 
+}
+
+/* Fuerza bruta para asegurar que la cara activa mande */
+.swiper-slide-active {
+  z-index: 50 !important;
 }

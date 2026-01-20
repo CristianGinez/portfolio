@@ -1,1 +1,16 @@
 @import "tailwindcss";
+
+/* ESTO ES LO QUE FALTABA Y ES VITAL */
+@layer base {
+  html, body {
+    height: 100%;       /* Obliga a ocupar toda la pantalla */
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;   /* Evita scroll doble y arregla el parpadeo */
+    background-color: #111; /* Fondo oscuro mientras carga */
+  }
+}
+.mySwiper-marquee .swiper-wrapper {
+  transition-timing-function: linear !important;
+}
