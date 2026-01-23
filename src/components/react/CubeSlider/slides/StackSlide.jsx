@@ -1,24 +1,25 @@
 import React, { useState, useRef, useMemo } from 'react';
+import { useSwiperSlide } from 'swiper/react';
 import gsap from 'gsap';
 import cv from '@cv'; 
 
 const TechIcon = ({ name }) => {
   const getSlugs = (rawName) => {
     const lower = rawName.toLowerCase();
-    const base = lower.replace(/\s+/g, ''); 
+    const base = lower.replace(/\s+/g, '');
     
     const variations = {
       base: base,
-      simpleIcon: base.replace(/\./g, 'dot').replace(/\+/g, 'plus').replace(/#/g, 'sharp'), 
-      hyphenated: lower.replace(/\s+/g, '-').replace(/\./g, '-').replace(/\+/g, 'cpp').replace(/#/g, 'sharp'), 
-      fileType: base === 'python' ? 'python' : base 
+      simpleIcon: base.replace(/\./g, 'dot').replace(/\+/g, 'plus').replace(/#/g, 'sharp'),
+      hyphenated: lower.replace(/\s+/g, '-').replace(/\./g, '-').replace(/\+/g, 'cpp').replace(/#/g, 'sharp'),
+      fileType: base === 'python' ? 'python' : base
     };
 
     if (base === 'nextjs') variations.simpleIcon = 'nextdotjs';
     if (base === 'nodejs') variations.simpleIcon = 'nodedotjs';
     if (base === 'dotnet' || base === '.net') { variations.base = 'dotnet'; variations.simpleIcon = 'dotnet'; }
     if (base === 'c++') { variations.simpleIcon = 'cplusplus'; variations.base = 'cpp'; }
-    if (base === 'sql') { variations.base = 'database'; } 
+    if (base === 'sql') { variations.base = 'database'; }
 
     return variations;
   };
@@ -26,16 +27,15 @@ const TechIcon = ({ name }) => {
   const { base, simpleIcon, hyphenated } = getSlugs(name);
 
   const sources = [
-
-    `https://cdn.simpleicons.org/${simpleIcon}`,
+    `https://cdn.simpleicons.org/${simpleIcon}`, 
     `https://skillicons.dev/icons?i=${base}`,
-    `https://api.iconify.design/devicon:${base}.svg`,
+    `https://api.iconify.design/devicon:${base}.svg`, 
     `https://api.iconify.design/logos:${base}.svg`,
-    `https://api.iconify.design/logos:${hyphenated}.svg`,
+    `https://api.iconify.design/logos:${hyphenated}.svg`, 
     `https://api.iconify.design/vscode-icons:file-type-${base}.svg`,
     `https://api.iconify.design/skill-icons:${base}.svg`,
-    `https://api.iconify.design/fa6-brands:${base}.svg`,
-    `https://api.iconify.design/mdi:${base}.svg`
+    `https://api.iconify.design/fa6-brands:${base}.svg`, 
+    `https://api.iconify.design/mdi:${base}.svg` 
   ];
 
   const [currentSrcIndex, setCurrentSrcIndex] = useState(0);
@@ -66,18 +66,19 @@ const TechIcon = ({ name }) => {
       onError={handleError}
       loading="lazy"
       className="w-10 h-10 md:w-12 md:h-12 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-sm"
-      key={name} 
+      key={name}
     />
   );
 };
 
 export default function StackSlide() {
-  
+  const swiperSlide = useSwiperSlide();
+  const isActive = swiperSlide ? swiperSlide.isActive : true;
+
   const stacks = useMemo(() => {
     const frontend = cv.skills.filter(s => s.keywords.some(k => k.includes("Frontend") || k.includes("CSS") || k.includes("UI") || k.includes("Diseño")));
     const backend = cv.skills.filter(s => s.keywords.some(k => k.includes("Backend") || k.includes("Bases de Datos") || k.includes("API") || k.includes("Servidor")));
     const tools = cv.skills.filter(s => s.keywords.some(k => k.includes("Git") || k.includes("DevOps") || k.includes("Cloud") || k.includes("Control")));
-
     const others = cv.skills.filter(s => !frontend.includes(s) && !backend.includes(s) && !tools.includes(s));
 
     const result = [
@@ -86,10 +87,7 @@ export default function StackSlide() {
         { id: 3, title: "Tools & Versioning", skills: tools, tag: "Git • CI/CD • Workflow" }
     ];
 
-    if (others.length > 0) {
-        result.push({ id: 4, title: "Other Skills", skills: others, tag: "Learning • Extras" });
-    }
-
+    if (others.length > 0) result.push({ id: 4, title: "Other Skills", skills: others, tag: "Learning • Extras" });
     return result.filter(r => r.skills.length > 0);
   }, []);
 
@@ -122,10 +120,19 @@ export default function StackSlide() {
   if (!cards.length) return null;
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full bg-zinc-100 overflow-hidden relative select-none"
+    <div className="flex flex-col items-center justify-center h-full w-full  overflow-hidden relative select-none"
          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}>
       
-      <div className="relative w-full max-w-4xl h-[50vh] min-h-100 flex items-center justify-center perspective-1000">
+      <div 
+        className="relative w-full max-w-4xl h-[60vh] md:h-[50vh] min-h-75 flex items-center justify-center perspective-1000"
+        style={{
+            opacity: isActive ? 1 : 0,
+            visibility: isActive ? 'visible' : 'hidden',
+            transition: isActive 
+                ? 'opacity 0.4s ease 0.3s, visibility 0s' 
+                : 'opacity 0.2s ease, visibility 0.2s step-end'
+        }}
+      >
         
         {[...cards].reverse().map((stack, index) => {
             const isTop = index === cards.length - 1;
@@ -136,44 +143,42 @@ export default function StackSlide() {
                 id={`card-${stack.id}`}
                 onClick={isTop ? handleCardClick : undefined}
                 style={{
-                  
+                    zIndex: index,
                     transform: `scale(${1 - (cards.length - 1 - index) * 0.05}) translateY(${(cards.length - 1 - index) * 10}px)`,
                     opacity: isTop ? 1 : 0.6,
                     touchAction: 'manipulation',
                     willChange: isTop ? 'transform, opacity' : 'auto'
                 }}
                 className={`
-                    absolute 
+                    absolute top-0 
                     flex flex-col items-center justify-center 
-                    w-[90%] md:w-full max-w-3xl h-full p-4 md:p-10 
+                    w-[85%] md:w-full max-w-3xl h-full p-4 md:p-10 
                     bg-white border border-gray-200 shadow-xl rounded-2xl
                     transition-all duration-300 ease-out
                     ${isTop ? 'cursor-pointer' : 'pointer-events-none'}
                 `}
               >
-                <h2 className="text-2xl md:text-3xl font-bold mb-4 tracking-[0.2em] uppercase text-center">
+                <h2 className="text-xl md:text-3xl font-bold mb-2 md:mb-4 tracking-[0.2em] uppercase text-center">
                     {stack.title}
                 </h2>
 
-                <div className="flex flex-wrap justify-center gap-6 content-center flex-1 overflow-y-auto max-h-[60%] scrollbar-hide">
+                <div className="flex flex-wrap justify-center gap-4 md:gap-6 content-center flex-1 overflow-y-auto scrollbar-hide py-2">
                     {stack.skills.map((skill, idx) => (
                         <div key={idx} className="flex flex-col items-center gap-2 group">
-
                             <TechIcon name={skill.name} />
-
-                            <span className="text-[10px] font-mono text-gray-500 uppercase text-center max-w-20 leading-tight">
+                            <span className="text-[9px] md:text-[10px] font-mono text-gray-500 uppercase text-center max-w-[70px] leading-tight">
                                 {skill.name}
                             </span>
                         </div>
                     ))}
                 </div>
 
-                <p className="mt-4 text-[10px] md:text-sm font-mono bg-gray-100 px-3 py-1 md:px-4 md:py-2 rounded uppercase text-center w-fit">
+                <p className="mt-2 md:mt-4 text-[9px] md:text-sm font-mono bg-gray-100 px-3 py-1 md:px-4 md:py-2 rounded uppercase text-center w-fit">
                     {stack.tag}
                 </p>
                 
                 {isTop && cards.length > 1 && (
-                    <div className="absolute bottom-2 right-4 text-[10px] text-gray-400 font-mono animate-pulse">
+                    <div className="absolute bottom-2 right-4 text-[9px] md:text-[10px] text-gray-400 font-mono animate-pulse">
                         CLICK ↻
                     </div>
                 )}
