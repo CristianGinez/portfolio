@@ -1,4 +1,5 @@
 import React from 'react';
+import cv from '@cv';
 
 export default function ContactSlide() {
   return (
@@ -13,13 +14,22 @@ export default function ContactSlide() {
         href="mailto:contacto@cristianginez.com" 
         className="text-2xl border-b-2 border-white pb-1 hover:text-gray-300 hover:border-gray-300 transition-all"
       >
-        cristianginez20@gmail.com
+        {cv.basics.email}
       </a>
 
       <div className="mt-12 flex gap-8">
-        <a href="https://www.linkedin.com/in/cristian-paolo-ginez-campos" className="text-sm font-mono hover:underline">LINKEDIN</a>
-        <a href="https://github.com/CristianGinez" className="text-sm font-mono hover:underline">GITHUB</a>
-        <a href="#" className="text-sm font-mono hover:underline">TWITTER</a>
+        {cv.basics.profiles.map((profile) => (
+        <a 
+      key={profile.network}
+      href={profile.url} 
+      className="text-sm font-mono hover:underline"
+      target="_blank"
+      rel="noopener noreferrer"
+      title={profile.network}
+        >
+      {profile.network}
+        </a>
+      ))}
       </div>
     </div>
   );

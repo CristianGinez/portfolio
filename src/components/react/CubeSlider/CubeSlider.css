@@ -5,11 +5,9 @@
   align-items: center;
   background-position: center;
   background-size: cover;
-  /* Asegura que no tenga eventos bloqueados */
   pointer-events: auto !important; 
 }
 
-/* Fuerza bruta para asegurar que la cara activa mande */
 .swiper-slide-active {
   z-index: 50 !important;
 }

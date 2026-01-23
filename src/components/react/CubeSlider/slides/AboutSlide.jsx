@@ -1,4 +1,6 @@
+// src/components/react/CubeSlider/slides/AboutSlide.jsx
 import React from 'react';
+import cv from '@cv';
 
 export default function AboutSlide() {
   return (
@@ -13,8 +15,7 @@ export default function AboutSlide() {
 
       <div className="mt-8 text-center md:text-lg text-gray-600 space-y-4">
         <p>
-          Soy <strong>Ingeniero de Sistemas e Informática</strong> especializado en desarrollo web Full Stack. 
-          Me apasiona transformar problemas complejos en arquitecturas escalables y experiencias de usuario fluidas.
+          {cv.basics.websitesummary}
         </p>
         <p>
           Enfoque en Clean Code, SOLID y rendimiento.

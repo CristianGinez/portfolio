@@ -1,160 +1,180 @@
-// src/components/react/CubeSlider/slides/StackSlide.jsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import gsap from 'gsap';
+import cv from '@cv'; 
 
-// 1. IMPORTAMOS LOS ICONOS (Corregido para evitar errores)
-import { FaReact, FaNodeJs, FaDocker, FaJava, FaPython, FaGitAlt, FaGithub, FaAngular } from 'react-icons/fa';
-// Nota: Usamos TbBrandCSharp porque SiCsharp a veces falla
-import { RiNextjsFill } from "react-icons/ri";
-import { TbBrandCSharp } from "react-icons/tb"; 
-import { SiAstro, SiTailwindcss, SiTypescript, SiSpringboot, SiDotnet, SiPostgresql, SiMongodb, SiRedis, SiMysql, SiPostman} from 'react-icons/si';
+const TechIcon = ({ name }) => {
+  const getSlugs = (rawName) => {
+    const lower = rawName.toLowerCase();
+    const base = lower.replace(/\s+/g, ''); 
+    
+    const variations = {
+      base: base,
+      simpleIcon: base.replace(/\./g, 'dot').replace(/\+/g, 'plus').replace(/#/g, 'sharp'), 
+      hyphenated: lower.replace(/\s+/g, '-').replace(/\./g, '-').replace(/\+/g, 'cpp').replace(/#/g, 'sharp'), 
+      fileType: base === 'python' ? 'python' : base 
+    };
 
-// --- DATA: Agrupamos las tecnologías por "Cartas" ---
-const stacks = [
-  {
-    id: 1,
-    title: "Modern Web",
-    icons: [
-      { Comp: SiAstro, color: "text-orange-500", name: "Astro" },
-      { Comp: FaReact, color: "text-blue-500", name: "React" },
-      { Comp: FaAngular, color: "text-red-500", name: "Angular" },
-      { Comp: RiNextjsFill, color: "text-black", name: "Next.JS" },
-      { Comp: SiTailwindcss, color: "text-cyan-400", name: "Tailwind" },
-      { Comp: SiTypescript, color: "text-blue-600", name: "TypeScript" },
-      { Comp: FaNodeJs, color: "text-green-500", name: "Node.js" },
-      { Comp: FaDocker, color: "text-blue-400", name: "Docker" },
-    ],
-    tag: "MERN Stack • Architecture • Cloud Native"
-  },
-  {
-    id: 2,
-    title: "Enterprise Backend",
-    icons: [
-      { Comp: FaJava, color: "text-red-600", name: "Java" },
-      { Comp: SiSpringboot, color: "text-green-600", name: "Spring Boot" },
-      { Comp: SiDotnet, color: "text-purple-600", name: ".NET Core" },
-      // Aquí usamos el icono corregido de C#
-      { Comp: TbBrandCSharp, color: "text-purple-500", name: "C#" },
-      { Comp: SiMysql, color: "text-blue-500", name: "MySQL" },
-      { Comp: SiPostgresql, color: "text-blue-400", name: "PostgreSQL" },
-    ],
-    tag: "Microservices • SOLID • High Performance"
-  },
-  {
-    id: 3,
-    title: "Data & DevOps",
-    icons: [
-      { Comp: FaPython, color: "text-yellow-500", name: "Python" },
-      { Comp: SiPostman, color: "text-orange-500", name: "Postman" },
-      { Comp: SiRedis, color: "text-red-500", name: "Redis" },
-      { Comp: SiMongodb, color: "text-green-500", name: "MongoDB" },
-      { Comp: FaGithub, color: "text-blue-600", name: "GitHub" },
-      { Comp: FaGitAlt, color: "text-orange-600", name: "Git" },
-    ],
-    tag: "CI/CD • Cloud Infrastructure • NoSQL"
+    if (base === 'nextjs') variations.simpleIcon = 'nextdotjs';
+    if (base === 'nodejs') variations.simpleIcon = 'nodedotjs';
+    if (base === 'dotnet' || base === '.net') { variations.base = 'dotnet'; variations.simpleIcon = 'dotnet'; }
+    if (base === 'c++') { variations.simpleIcon = 'cplusplus'; variations.base = 'cpp'; }
+    if (base === 'sql') { variations.base = 'database'; } 
+
+    return variations;
+  };
+
+  const { base, simpleIcon, hyphenated } = getSlugs(name);
+
+  const sources = [
+
+    `https://cdn.simpleicons.org/${simpleIcon}`,
+    `https://skillicons.dev/icons?i=${base}`,
+    `https://api.iconify.design/devicon:${base}.svg`,
+    `https://api.iconify.design/logos:${base}.svg`,
+    `https://api.iconify.design/logos:${hyphenated}.svg`,
+    `https://api.iconify.design/vscode-icons:file-type-${base}.svg`,
+    `https://api.iconify.design/skill-icons:${base}.svg`,
+    `https://api.iconify.design/fa6-brands:${base}.svg`,
+    `https://api.iconify.design/mdi:${base}.svg`
+  ];
+
+  const [currentSrcIndex, setCurrentSrcIndex] = useState(0);
+  const [hasError, setHasError] = useState(false);
+
+  const handleError = () => {
+    if (currentSrcIndex < sources.length - 1) {
+      setCurrentSrcIndex(prev => prev + 1);
+    } else {
+      setHasError(true);
+    }
+  };
+
+  if (hasError) {
+    return (
+      <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-gray-200 rounded-full border border-gray-300 shadow-sm">
+        <span className="font-mono font-bold text-gray-500 text-xs">
+            {name.substring(0, 3).toUpperCase()}
+        </span>
+      </div>
+    );
   }
-];
+
+  return (
+    <img 
+      src={sources[currentSrcIndex]} 
+      alt={name}
+      onError={handleError}
+      loading="lazy"
+      className="w-10 h-10 md:w-12 md:h-12 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-sm"
+      key={name} 
+    />
+  );
+};
 
 export default function StackSlide() {
-  // El índice 0 es siempre la carta visible (Top Card)
+  
+  const stacks = useMemo(() => {
+    const frontend = cv.skills.filter(s => s.keywords.some(k => k.includes("Frontend") || k.includes("CSS") || k.includes("UI") || k.includes("Diseño")));
+    const backend = cv.skills.filter(s => s.keywords.some(k => k.includes("Backend") || k.includes("Bases de Datos") || k.includes("API") || k.includes("Servidor")));
+    const tools = cv.skills.filter(s => s.keywords.some(k => k.includes("Git") || k.includes("DevOps") || k.includes("Cloud") || k.includes("Control")));
+
+    const others = cv.skills.filter(s => !frontend.includes(s) && !backend.includes(s) && !tools.includes(s));
+
+    const result = [
+        { id: 1, title: "Frontend Core", skills: frontend, tag: "UI • UX • Responsive" },
+        { id: 2, title: "Backend & Data", skills: backend, tag: "APIs • SQL • Logic" },
+        { id: 3, title: "Tools & Versioning", skills: tools, tag: "Git • CI/CD • Workflow" }
+    ];
+
+    if (others.length > 0) {
+        result.push({ id: 4, title: "Other Skills", skills: others, tag: "Learning • Extras" });
+    }
+
+    return result.filter(r => r.skills.length > 0);
+  }, []);
+
   const [cards, setCards] = useState(stacks);
   const isAnimating = useRef(false);
 
   const handleCardClick = () => {
-    if (isAnimating.current) return;
+    if (isAnimating.current || cards.length <= 1) return;
     isAnimating.current = true;
-
-    // Seleccionamos la carta superior visualmente
     const topCard = document.getElementById(`card-${cards[0].id}`);
     
-    // Animación: Sale volando y reaparece al fondo
     const tl = gsap.timeline({
       onComplete: () => {
-        // Rotamos el array: el primero pasa al final
         setCards((prev) => {
           const newOrder = [...prev];
           const first = newOrder.shift();
           newOrder.push(first);
           return newOrder;
         });
-        
-        // Reset instantáneo para que aparezca atrás sin animación rara
         gsap.set(topCard, { x: 0, y: 0, rotation: 0, opacity: 1, scale: 1 });
         isAnimating.current = false;
       }
     });
 
-    // 1. Vuela a la derecha y rota
     tl.to(topCard, {
-      x: 300,        
-      y: 50,         
-      rotation: 15,  
-      opacity: 0,    
-      scale: 0.9,
-      duration: 0.4,
-      ease: "power2.in"
+      x: '120%', y: 20, rotation: 15, opacity: 0, scale: 0.9, duration: 0.35, ease: "power2.in"
     });
   };
 
+  if (!cards.length) return null;
+
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full bg-zinc-100 overflow-hidden relative select-none">
+    <div className="flex flex-col items-center justify-center h-full w-full bg-zinc-100 overflow-hidden relative select-none"
+         style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}>
       
-      {/* Contenedor de cartas apiladas */}
-      <div className="relative w-full max-w-4xl h-125 flex items-center justify-center">
+      <div className="relative w-full max-w-4xl h-[50vh] min-h-100 flex items-center justify-center perspective-1000">
         
-        {/* Invertimos el array para renderizar de atrás hacia adelante (Z-Index natural) */}
         {[...cards].reverse().map((stack, index) => {
-            // "isTop" es verdadero si es el último elemento renderizado (el que está hasta arriba)
             const isTop = index === cards.length - 1;
             
             return (
               <div
                 key={stack.id}
                 id={`card-${stack.id}`}
-                onClick={isTop ? handleCardClick : undefined} // Solo click en la de arriba
+                onClick={isTop ? handleCardClick : undefined}
                 style={{
                     zIndex: index,
-                    // Efecto de profundidad matemática
-                    transform: `scale(${1 - (cards.length - 1 - index) * 0.05}) translateY(${(cards.length - 1 - index) * 15}px)`,
-                    opacity: isTop ? 1 : 0.5, 
-                    filter: isTop ? 'none' : 'grayscale(100%) blur(1px)', 
-                    touchAction: 'manipulation' // Vital para móvil
+                    transform: `scale(${1 - (cards.length - 1 - index) * 0.05}) translateY(${(cards.length - 1 - index) * 10}px)`,
+                    opacity: isTop ? 1 : 0.6,
+                    touchAction: 'manipulation',
+                    willChange: isTop ? 'transform, opacity' : 'auto'
                 }}
                 className={`
                     absolute top-0 
                     flex flex-col items-center justify-center 
-                    w-full max-w-3xl h-full p-6 md:p-10 
+                    w-[90%] md:w-full max-w-3xl h-full p-4 md:p-10 
                     bg-white border border-gray-200 shadow-xl rounded-2xl
-                    transition-all duration-500 ease-out
-                    ${isTop ? 'cursor-pointer hover:shadow-2xl' : 'pointer-events-none'}
+                    transition-all duration-300 ease-out
+                    ${isTop ? 'cursor-pointer' : 'pointer-events-none'}
                 `}
               >
-                <h2 className="text-3xl md:text-4xl font-bold mb-8 tracking-[0.3em] uppercase text-center">
+                <h2 className="text-2xl md:text-3xl font-bold mb-4 tracking-[0.2em] uppercase text-center">
                     {stack.title}
                 </h2>
 
-                <div className="flex flex-wrap justify-center gap-6 md:gap-8 text-5xl md:text-7xl text-gray-800">
-                    {stack.icons.map((item, idx) => (
-                        <div key={idx} className="group relative">
-                            <item.Comp 
-                                className={`${item.color} transition-colors duration-300`} 
-                            />
-                            {/* Tooltip simple */}
-                            <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-black text-white px-2 py-1 rounded">
-                                {item.name}
+                <div className="flex flex-wrap justify-center gap-6 content-center flex-1 overflow-y-auto max-h-[60%] scrollbar-hide">
+                    {stack.skills.map((skill, idx) => (
+                        <div key={idx} className="flex flex-col items-center gap-2 group">
+
+                            <TechIcon name={skill.name} />
+
+                            <span className="text-[10px] font-mono text-gray-500 uppercase text-center max-w-20 leading-tight">
+                                {skill.name}
                             </span>
                         </div>
                     ))}
                 </div>
 
-                <p className="mt-10 text-xs md:text-sm font-mono bg-gray-100 px-4 py-2 rounded uppercase text-center">
+                <p className="mt-4 text-[10px] md:text-sm font-mono bg-gray-100 px-3 py-1 md:px-4 md:py-2 rounded uppercase text-center w-fit">
                     {stack.tag}
                 </p>
                 
-                {/* Indicador para barajar */}
-                {isTop && (
-                    <div className="absolute bottom-4 right-6 text-[10px] text-gray-400 font-mono animate-pulse">
-                        CLICK TO SHUFFLE ↻
+                {isTop && cards.length > 1 && (
+                    <div className="absolute bottom-2 right-4 text-[10px] text-gray-400 font-mono animate-pulse">
+                        CLICK ↻
                     </div>
                 )}
               </div>

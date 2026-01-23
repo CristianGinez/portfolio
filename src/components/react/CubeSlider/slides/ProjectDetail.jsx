@@ -1,10 +1,8 @@
-// src/components/react/CubeSlider/slides/ProjectDetail.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { useSwiper } from 'swiper/react';
 import gsap from 'gsap';
 import { FaTimes, FaCalendarAlt, FaExternalLinkAlt, FaDesktop } from 'react-icons/fa';
 
-// Importamos el nuevo componente de Galería
 import ProjectGallery from './ProjectGallery'; 
 
 export default function ProjectDetail({ project, onClose }) {
@@ -12,7 +10,6 @@ export default function ProjectDetail({ project, onClose }) {
   const swiper = useSwiper();
   const [showEmbed, setShowEmbed] = useState(false);
 
-  // --- 1. LÓGICA DE SEGURIDAD ---
   useEffect(() => {
     if (swiper) {
       if (swiper.mousewheel) swiper.mousewheel.disable();
@@ -28,7 +25,6 @@ export default function ProjectDetail({ project, onClose }) {
     };
   }, [swiper]);
 
-  // --- 2. ANIMACIONES ---
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.fromTo(containerRef.current, 
@@ -57,7 +53,6 @@ export default function ProjectDetail({ project, onClose }) {
         ref={containerRef}
         className="absolute inset-0 bg-zinc-900 text-white z-50 p-6 md:p-12 flex flex-col overflow-y-auto scrollbar-hide"
     >
-        {/* BOTÓN CERRAR */}
         <button 
             onClick={handleClose}
             className="cursor-pointer fixed top-6 right-6 md:top-10 md:right-10 text-white/50 hover:text-white hover:rotate-90 transition-all z-50 p-2 mix-blend-difference"
@@ -65,10 +60,8 @@ export default function ProjectDetail({ project, onClose }) {
             <FaTimes size={40} />
         </button>
 
-        {/* CONTENIDO */}
         <div className="max-w-5xl mx-auto w-full mt-10 md:mt-16 pb-20">
             
-            {/* Header Data */}
             <div className="flex flex-wrap items-center gap-6 mb-4 text-gray-400 font-mono text-sm tracking-widest anim-item">
                 <span className="flex items-center gap-2">
                     <FaCalendarAlt /> {project.year}
@@ -79,12 +72,10 @@ export default function ProjectDetail({ project, onClose }) {
                 </span>
             </div>
 
-            {/* Título */}
             <h2 className="text-5xl md:text-8xl font-black mb-10 uppercase leading-[0.9] tracking-tighter anim-item">
                 {project.title}
             </h2>
 
-            {/* Botonera */}
             <div className="flex flex-wrap gap-6 mb-16 anim-item">
                 {project.previewUrl && (
                     <button 
@@ -111,7 +102,6 @@ export default function ProjectDetail({ project, onClose }) {
                 )}
             </div>
 
-            {/* CONTENIDO DINÁMICO */}
             {showEmbed && project.previewUrl ? (
                 <div className="w-full h-[70vh] border border-gray-800 rounded-sm overflow-hidden animate-fade-in anim-item relative bg-black">
                     <div className="absolute inset-0 flex items-center justify-center text-gray-600 font-mono text-xs z-0">
@@ -126,7 +116,6 @@ export default function ProjectDetail({ project, onClose }) {
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 anim-item">
                     
-                    {/* Columna Izquierda: Texto */}
                     <div className="lg:col-span-2 space-y-8">
                         <p className="text-xl md:text-2xl leading-relaxed text-gray-300 font-light">
                             {project.description}
@@ -136,8 +125,7 @@ export default function ProjectDetail({ project, onClose }) {
                         </div>
                     </div>
 
-                    {/* Columna Derecha: NUEVA GALERÍA */}
-                    <div className="lg:col-span-1 w-full min-w-0"> {/* min-w-0 es vital para que Swiper no rompa el grid */}
+                    <div className="lg:col-span-1 w-full min-w-0"> 
                          <ProjectGallery images={project.gallery} />
                     </div>
                 </div>

@@ -32,22 +32,17 @@ export default function CubeSlider() {
         modules={[EffectCube, Mousewheel, Pagination]}
         className="mySwiper h-full w-full"
         
-        // --- 🔴 LA SOLUCIÓN DEFINITIVA PARA MÓVIL ---
-        
-        // 1. UMBRAL (La clave): Swiper ignorará movimientos menores a 20px.
-        // Esto permite que el dedo tiemble un poco al hacer clic sin que Swiper lo cancele.
+      
         threshold={20} 
 
-        // 2. Permisividad de Eventos:
         touchStartPreventDefault={false} 
         preventClicks={false}
         preventClicksPropagation={false}
         
-        // 3. Bloqueo de zonas específicas
         noSwiping={true} 
         noSwipingClass="swiper-no-swiping"
         
-        // 4. Force release: Ayuda a que suelte el evento más rápido
+        
         touchReleaseOnEdges={true}
       >
         <SwiperSlide className="bg-white text-black">
@@ -58,7 +53,6 @@ export default function CubeSlider() {
           <AboutSlide />
         </SwiperSlide>
 
-        {/* Slide de Proyectos (Donde ocurre el problema) */}
         <SwiperSlide className="bg-white text-black">
           <ProjectsSlide />
         </SwiperSlide>

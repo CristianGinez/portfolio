@@ -2,7 +2,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
-// Importamos módulos necesarios
 import { Autoplay, Navigation, EffectFade } from 'swiper/modules';
 import { FaTimes, FaExpand, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import gsap from 'gsap';
@@ -13,18 +12,15 @@ import 'swiper/css/effect-fade';
 
 export default function ProjectGallery({ images }) {
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [lightboxSwiper, setLightboxSwiper] = useState(null); // Para controlar el Swiper del Lightbox
-  
+  const [lightboxSwiper, setLightboxSwiper] = useState(null); 
   const lightboxRef = useRef(null);
 
-  // Sincronizar el Swiper del Lightbox cuando abrimos una imagen específica
   useEffect(() => {
     if (lightboxSwiper && selectedIndex !== null) {
-      lightboxSwiper.slideTo(selectedIndex, 0); // 0ms para que sea instantáneo al abrir
+      lightboxSwiper.slideTo(selectedIndex, 0);
     }
   }, [lightboxSwiper, selectedIndex]);
 
-  // --- ANIMACIONES DE ENTRADA (GSAP) ---
   useEffect(() => {
     if (selectedIndex !== null && lightboxRef.current) {
         const ctx = gsap.context(() => {
@@ -44,14 +40,13 @@ export default function ProjectGallery({ images }) {
       duration: 0.3,
       onComplete: () => {
         setSelectedIndex(null);
-        setLightboxSwiper(null); // Limpiamos la instancia
+        setLightboxSwiper(null); 
       }
     });
   };
 
   if (!images || images.length === 0) return null;
 
-  // --- RENDERIZADO DEL LIGHTBOX (PORTAL) ---
   const renderLightbox = () => {
     if (selectedIndex === null) return null;
 
@@ -60,7 +55,6 @@ export default function ProjectGallery({ images }) {
             ref={lightboxRef}
             className="fixed inset-0 z-9999 bg-[rgba(0,0,0,0.96)] backdrop-blur-sm flex flex-col h-screen w-screen"
         >
-            {/* 1. BARRA SUPERIOR */}
             <div className="absolute top-0 left-0 right-0 p-6 flex justify-end z-10002">
                  <button 
                     onClick={closeLightbox}
@@ -70,10 +64,8 @@ export default function ProjectGallery({ images }) {
                 </button>
             </div>
 
-            {/* 2. CONTENEDOR CENTRAL (SWIPER) */}
             <div className="flex-1 flex items-center justify-center h-full w-full relative z-10000">
                 
-                {/* Flecha Izquierda (Controla el Swiper) */}
                 <button 
                     onClick={(e) => {
                         e.stopPropagation();
@@ -84,16 +76,15 @@ export default function ProjectGallery({ images }) {
                     <FaChevronLeft size={30} />
                 </button>
 
-                {/* --- SWIPER PRINCIPAL DEL LIGHTBOX --- */}
                 <Swiper
                     modules={[Navigation, EffectFade]}
-                    effect={'fade'} // Transición suave tipo desvanecimiento (opcional, quítalo si prefieres slide normal)
+                    effect={'fade'}
                     fadeEffect={{ crossFade: true }}
                     spaceBetween={40}
                     slidesPerView={1}
-                    initialSlide={selectedIndex} // Abre en la foto correcta
-                    onSwiper={setLightboxSwiper} // Guardamos la instancia para controlarla
-                    onSlideChange={(swiper) => setSelectedIndex(swiper.activeIndex)} // Sincronizamos estado al deslizar
+                    initialSlide={selectedIndex} 
+                    onSwiper={setLightboxSwiper} 
+                    onSlideChange={(swiper) => setSelectedIndex(swiper.activeIndex)} 
                     className="h-full w-full flex items-center justify-center"
                 >
                     {images.map((img, index) => (
@@ -108,7 +99,6 @@ export default function ProjectGallery({ images }) {
                     ))}
                 </Swiper>
 
-                 {/* Flecha Derecha */}
                  <button 
                     onClick={(e) => {
                         e.stopPropagation();
@@ -120,8 +110,6 @@ export default function ProjectGallery({ images }) {
                 </button>
             </div>
             
-            {/* 3. PAGINACIÓN (CÍRCULOS) */}
-            {/* Ajuste: Cambiado de bottom-8 a bottom-12 para subirlos */}
             <div 
                 className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-4 z-10002 pointer-events-auto"
                 onClick={(e) => e.stopPropagation()}
@@ -145,7 +133,6 @@ export default function ProjectGallery({ images }) {
 
   return (
     <div className="w-full mt-8">
-      {/* HEADER GALERÍA */}
       <div className="flex justify-between items-end mb-6 border-b border-gray-800 pb-2">
          <h4 className="font-mono text-sm text-gray-400 uppercase tracking-widest">
             Galería
@@ -158,7 +145,6 @@ export default function ProjectGallery({ images }) {
          </div>
       </div>
 
-      {/* CARRUSEL MINIATURAS (MARQUEE) */}
       <div className="relative w-full overflow-hidden">
         <div className="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-zinc-900 to-transparent z-10 pointer-events-none"></div>
         <div className="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-zinc-900 to-transparent z-10 pointer-events-none"></div>
