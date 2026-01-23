@@ -136,14 +136,14 @@ export default function StackSlide() {
                 id={`card-${stack.id}`}
                 onClick={isTop ? handleCardClick : undefined}
                 style={{
-                    zIndex: index,
+                  
                     transform: `scale(${1 - (cards.length - 1 - index) * 0.05}) translateY(${(cards.length - 1 - index) * 10}px)`,
                     opacity: isTop ? 1 : 0.6,
                     touchAction: 'manipulation',
                     willChange: isTop ? 'transform, opacity' : 'auto'
                 }}
                 className={`
-                    absolute top-0 
+                    absolute 
                     flex flex-col items-center justify-center 
                     w-[90%] md:w-full max-w-3xl h-full p-4 md:p-10 
                     bg-white border border-gray-200 shadow-xl rounded-2xl
