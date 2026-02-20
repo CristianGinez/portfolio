@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectCube, Mousewheel, Pagination } from 'swiper/modules';
 
@@ -14,9 +14,12 @@ import StackSlide from './slides/StackSlide';
 import ContactSlide from './slides/ContactSlide';
 
 export default function CubeSlider() {
+  const swiperRef = useRef(null);
+
   return (
     <div className="h-full w-full bg-neutral-900">
       <Swiper
+        onSwiper={(s) => { swiperRef.current = s; }}
         effect={'cube'}
         grabCursor={true}
         cubeEffect={{
@@ -31,18 +34,12 @@ export default function CubeSlider() {
         loop={false}
         modules={[EffectCube, Mousewheel, Pagination]}
         className="mySwiper h-full w-full"
-        
-      
-        threshold={20} 
-
-        touchStartPreventDefault={false} 
+        threshold={20}
+        touchStartPreventDefault={false}
         preventClicks={false}
         preventClicksPropagation={false}
-        
-        noSwiping={true} 
+        noSwiping={true}
         noSwipingClass="swiper-no-swiping"
-        
-        
         touchReleaseOnEdges={true}
       >
         <SwiperSlide className="bg-white text-black">
@@ -54,7 +51,7 @@ export default function CubeSlider() {
         </SwiperSlide>
 
         <SwiperSlide className="bg-white text-black">
-          <ProjectsSlide />
+          <ProjectsSlide swiperRef={swiperRef} />
         </SwiperSlide>
 
         <SwiperSlide className="bg-zinc-50 text-black">
@@ -64,7 +61,6 @@ export default function CubeSlider() {
         <SwiperSlide className="bg-black text-white">
           <ContactSlide />
         </SwiperSlide>
-
       </Swiper>
     </div>
   );

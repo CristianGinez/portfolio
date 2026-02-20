@@ -8,20 +8,19 @@ const trabajos = cv.work ?? [];
 const MODES = ['PROYECTOS', 'TRABAJOS'];
 const TOTAL_MODES = MODES.length;
 
-const SWITCH_THRESHOLD = 80;
-const MAX_DRAG_FREE    = 110;
-const RUBBER_FACTOR    = 0.22;
+const SWITCH_THRESHOLD = 70;
+const MAX_DRAG_FREE    = 100;
+const RUBBER_FACTOR    = 0.20;
 const TICK_COUNT       = 30;
 const TICK_SPACING     = 20;
 
 function rubberBand(x, limit, factor) {
   if (Math.abs(x) <= limit) return x;
   const overflow = Math.abs(x) - limit;
-  const damped   = limit + overflow * factor;
-  return x < 0 ? -damped : damped;
+  return (x < 0 ? -1 : 1) * (limit + overflow * factor);
 }
 
-// ── Ruler ─────────────────────────────────────────────────────────────────────
+// ── Ruler ticks ───────────────────────────────────────────────────────────────
 function Ruler({ rulerRef }) {
   return (
     <div
@@ -57,11 +56,12 @@ function Ruler({ rulerRef }) {
 }
 
 // ── Drag Dial ─────────────────────────────────────────────────────────────────
-function DragDial({ mode, onSwitch }) {
-  const rulerRef  = useRef(null);
-  const needleRef = useRef(null);
-  const dotRef    = useRef(null);
-  const drag      = useRef({ active: false, startX: 0, offset: 0, hasSwitched: false });
+function DragDial({ mode, onSwitch, swiperRef }) {
+  const rulerRef    = useRef(null);
+  const needleRef   = useRef(null);
+  const dotRef      = useRef(null);
+  const dialRef     = useRef(null);
+  const drag        = useRef({ active: false, startX: 0, startY: 0, offset: 0, hasSwitched: false, locked: false });
   const [liveOffset, setLiveOffset] = useState(0);
 
   const atStart = mode === 0;
@@ -80,133 +80,154 @@ function DragDial({ mode, onSwitch }) {
   const snapBack = useCallback(() => {
     gsap.to(rulerRef.current, { x: 0, duration: 0.5, ease: 'elastic.out(1,0.55)' });
     setLiveOffset(0);
-  }, []);
-
-  const onPointerDown = useCallback((e) => {
-    gsap.killTweensOf(rulerRef.current);
-    drag.current = { active: true, startX: e.clientX, offset: 0, hasSwitched: false };
-    e.currentTarget.setPointerCapture(e.pointerId);
-  }, []);
-
-  const onPointerMove = useCallback((e) => {
-    if (!drag.current.active) return;
-    const raw = e.clientX - drag.current.startX;
-
-    let bounded = raw;
-    // At start: only allow dragging left (toward TRABAJOS), resist right
-    if (atStart && raw > 0) {
-      bounded = rubberBand(raw, 28, 0.10);
+    // Re-enable swiper
+    if (swiperRef?.current) {
+      swiperRef.current.allowTouchMove = true;
     }
-    // At end: only allow dragging right (toward PROYECTOS), resist left
-    else if (atEnd && raw < 0) {
-      bounded = rubberBand(raw, 28, 0.10);
+  }, [swiperRef]);
+
+  // ── Touch / Pointer handlers ──────────────────────────────────────────────
+  // We use both touch and pointer events to cover all mobile browsers
+
+  const startDrag = useCallback((clientX, clientY) => {
+    gsap.killTweensOf(rulerRef.current);
+    drag.current = {
+      active: true,
+      startX: clientX,
+      startY: clientY,
+      offset: 0,
+      hasSwitched: false,
+      locked: false, // direction not yet determined
+    };
+  }, []);
+
+  const moveDrag = useCallback((clientX, clientY) => {
+    if (!drag.current.active) return;
+
+    const deltaX = clientX - drag.current.startX;
+    const deltaY = clientY - drag.current.startY;
+
+    // Direction lock: determine if this is a horizontal or vertical drag
+    if (!drag.current.locked) {
+      if (Math.abs(deltaX) < 6 && Math.abs(deltaY) < 6) return; // wait
+      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        // Vertical drag → let swiper handle it, abort dial
+        drag.current.active = false;
+        if (swiperRef?.current) swiperRef.current.allowTouchMove = true;
+        return;
+      }
+      // Horizontal drag confirmed → lock dial, disable swiper
+      drag.current.locked = true;
+      if (swiperRef?.current) swiperRef.current.allowTouchMove = false;
+    }
+
+    // Compute bounded offset
+    let bounded = deltaX;
+    if (atStart && deltaX > 0) {
+      bounded = rubberBand(deltaX, 28, 0.10);
+    } else if (atEnd && deltaX < 0) {
+      bounded = rubberBand(deltaX, 28, 0.10);
     } else {
-      bounded = rubberBand(raw, MAX_DRAG_FREE, RUBBER_FACTOR);
+      bounded = rubberBand(deltaX, MAX_DRAG_FREE, RUBBER_FACTOR);
     }
 
     drag.current.offset = bounded;
     gsap.set(rulerRef.current, { x: bounded });
     setLiveOffset(bounded);
 
-    if (!drag.current.hasSwitched && Math.abs(raw) >= SWITCH_THRESHOLD) {
-      const nextMode = raw < 0 ? mode + 1 : mode - 1;
+    // Switch check
+    if (!drag.current.hasSwitched && Math.abs(deltaX) >= SWITCH_THRESHOLD) {
+      const nextMode = deltaX < 0 ? mode + 1 : mode - 1;
       if (nextMode >= 0 && nextMode < TOTAL_MODES) {
         drag.current.hasSwitched = true;
-        drag.current.startX = e.clientX;
+        drag.current.startX = clientX;
         flashNeedle();
         onSwitch(nextMode);
       }
     }
-  }, [mode, atStart, atEnd, onSwitch, flashNeedle]);
+  }, [mode, atStart, atEnd, onSwitch, flashNeedle, swiperRef]);
 
-  const onPointerUp = useCallback(() => {
+  const endDrag = useCallback(() => {
     if (!drag.current.active) return;
     drag.current.active = false;
     snapBack();
   }, [snapBack]);
 
+  // Pointer events (desktop + some mobile)
+  const onPointerDown = (e) => {
+    startDrag(e.clientX, e.clientY);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e) => moveDrag(e.clientX, e.clientY);
+  const onPointerUp   = () => endDrag();
+
+  // Touch events (iOS Safari fallback)
+  const onTouchStart = (e) => {
+    const t = e.touches[0];
+    startDrag(t.clientX, t.clientY);
+  };
+  const onTouchMove = (e) => {
+    const t = e.touches[0];
+    moveDrag(t.clientX, t.clientY);
+    // If drag is locked horizontal, prevent page scroll
+    if (drag.current.locked) e.preventDefault();
+  };
+  const onTouchEnd = () => endDrag();
+
   const progress = Math.min(1, Math.abs(liveOffset) / SWITCH_THRESHOLD);
 
   return (
     <div
+      ref={dialRef}
       style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0,
-        cursor: 'ew-resize', userSelect: 'none', touchAction: 'none',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        cursor: 'ew-resize', userSelect: 'none',
+        // Don't set touchAction: 'none' globally — we handle it dynamically
+        touchAction: 'pan-y',
       }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
-      onPointerLeave={onPointerUp}
+      onPointerCancel={onPointerUp}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      onTouchCancel={onTouchEnd}
     >
-      {/* ── Labels — each in its own fixed-width slot so they never overlap ── */}
+      {/* ── Labels ── */}
       <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 0,
-        width: 360,
-        marginBottom: 8,
-        position: 'relative',
-        height: 28,
-        overflow: 'hidden',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: 360, marginBottom: 8, height: 28,
       }}>
-        {/* Left label slot */}
-        <div style={{
-          width: 160,
-          display: 'flex',
-          justifyContent: 'flex-end',
-          paddingRight: 16,
-          overflow: 'hidden',
-        }}>
+        {/* Left slot — PROYECTOS */}
+        <div style={{ width: 160, display: 'flex', justifyContent: 'flex-end', paddingRight: 16, overflow: 'hidden' }}>
           <span style={{
-            fontSize: 11, letterSpacing: 4, fontWeight: 900, fontFamily: 'monospace',
-            color: '#111',
-            opacity: mode === 0
-              ? 1
-              : (liveOffset > 0 ? 0.14 + progress * 0.6 : 0.14),
-            transform: mode === 0
-              ? `translateX(0px)`
-              : `translateX(${liveOffset > 0 ? progress * 12 : 0}px)`,
-            transition: drag.current?.active ? 'none' : 'all 0.4s cubic-bezier(0.34,1.56,0.64,1)',
-            display: 'block',
-            whiteSpace: 'nowrap',
+            fontSize: 11, letterSpacing: 4, fontWeight: 900, fontFamily: 'monospace', color: '#111',
+            opacity: mode === 0 ? 1 : (liveOffset > 0 ? 0.14 + progress * 0.65 : 0.14),
+            transition: drag.current.active ? 'none' : 'opacity 0.4s ease',
+            whiteSpace: 'nowrap', display: 'block',
           }}>
             PROYECTOS
           </span>
         </div>
 
         {/* Divider */}
-        <div style={{
-          width: 1, height: 14, background: '#ddd', flexShrink: 0,
-        }} />
+        <div style={{ width: 1, height: 14, background: '#ddd', flexShrink: 0 }} />
 
-        {/* Right label slot */}
-        <div style={{
-          width: 160,
-          display: 'flex',
-          justifyContent: 'flex-start',
-          paddingLeft: 16,
-          overflow: 'hidden',
-        }}>
+        {/* Right slot — TRABAJOS */}
+        <div style={{ width: 160, display: 'flex', justifyContent: 'flex-start', paddingLeft: 16, overflow: 'hidden' }}>
           <span style={{
-            fontSize: 11, letterSpacing: 4, fontWeight: 900, fontFamily: 'monospace',
-            color: '#111',
-            opacity: mode === 1
-              ? 1
-              : (liveOffset < 0 ? 0.14 + progress * 0.6 : 0.14),
-            transform: mode === 1
-              ? `translateX(0px)`
-              : `translateX(${liveOffset < 0 ? -progress * 12 : 0}px)`,
-            transition: drag.current?.active ? 'none' : 'all 0.4s cubic-bezier(0.34,1.56,0.64,1)',
-            display: 'block',
-            whiteSpace: 'nowrap',
+            fontSize: 11, letterSpacing: 4, fontWeight: 900, fontFamily: 'monospace', color: '#111',
+            opacity: mode === 1 ? 1 : (liveOffset < 0 ? 0.14 + progress * 0.65 : 0.14),
+            transition: drag.current.active ? 'none' : 'opacity 0.4s ease',
+            whiteSpace: 'nowrap', display: 'block',
           }}>
             TRABAJOS
           </span>
         </div>
       </div>
 
-      {/* ── Ruler ── */}
+      {/* ── Ruler track ── */}
       <div style={{ position: 'relative', width: 310, height: 48, overflow: 'hidden' }}>
         {/* Edge fades */}
         <div style={{
@@ -224,9 +245,8 @@ function DragDial({ mode, onSwitch }) {
         <div ref={needleRef} style={{
           position: 'absolute', left: '50%', bottom: 10,
           transform: 'translateX(-50%)',
-          width: 2.5, height: 26,
-          background: '#111', borderRadius: '2px 2px 0 0',
-          zIndex: 5, transformOrigin: 'bottom center',
+          width: 2.5, height: 26, background: '#111',
+          borderRadius: '2px 2px 0 0', zIndex: 5, transformOrigin: 'bottom center',
         }} />
         <div ref={dotRef} style={{
           position: 'absolute', bottom: 6, left: '50%',
@@ -239,60 +259,38 @@ function DragDial({ mode, onSwitch }) {
       </div>
 
       {/* ── Position indicator ── */}
-      <div style={{
-        marginTop: 10,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-      }}>
+      <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
         {MODES.map((label, i) => {
-          const isActive = i === mode;
-          // approaching: dragging toward this one
+          const isActive   = i === mode;
           const approaching = (i === 1 && liveOffset < 0) || (i === 0 && liveOffset > 0);
-          const approachOpacity = approaching ? 0.4 + progress * 0.5 : isActive ? 1 : 0.22;
-          const approachScale   = isActive ? 1 : (approaching ? 0.85 + progress * 0.15 : 0.75);
 
           return (
             <React.Fragment key={label}>
               {i > 0 && (
-                // Track line between dots
                 <div style={{
-                  position: 'relative',
-                  width: 48,
-                  height: 2,
-                  background: '#e8e8e8',
-                  borderRadius: 2,
-                  overflow: 'visible',
+                  position: 'relative', width: 48, height: 2,
+                  background: '#e8e8e8', borderRadius: 2,
                 }}>
-                  {/* Traveling dot on the line */}
                   <div style={{
-                    position: 'absolute',
-                    top: '50%',
-                    // mode=0: dot at left (0%), mode=1: dot at right (100%)
-                    // while dragging left (toward mode 1): progress toward right
+                    position: 'absolute', top: '50%',
                     left: mode === 0
                       ? `${liveOffset < 0 ? progress * 100 : 0}%`
                       : `${liveOffset > 0 ? (1 - progress) * 100 : 100}%`,
                     transform: 'translate(-50%, -50%)',
-                    width: 6,
-                    height: 6,
-                    borderRadius: '50%',
+                    width: 6, height: 6, borderRadius: '50%',
                     background: '#111',
-                    transition: drag.current?.active ? 'none' : 'left 0.45s cubic-bezier(0.34,1.56,0.64,1)',
+                    transition: drag.current.active ? 'none' : 'left 0.45s cubic-bezier(0.34,1.56,0.64,1)',
                   }} />
                 </div>
               )}
-
-              {/* Mode dot */}
               <div style={{
                 width: isActive ? 9 : 7,
                 height: isActive ? 9 : 7,
                 borderRadius: '50%',
                 background: isActive ? '#111' : '#d0d0d0',
                 border: isActive ? 'none' : '1.5px solid #ccc',
-                transform: `scale(${approachScale})`,
-                opacity: approachOpacity,
-                transition: drag.current?.active ? 'none' : 'all 0.4s cubic-bezier(0.34,1.56,0.64,1)',
+                opacity: isActive ? 1 : (approaching ? 0.4 + progress * 0.5 : 0.22),
+                transition: drag.current.active ? 'none' : 'all 0.4s cubic-bezier(0.34,1.56,0.64,1)',
                 flexShrink: 0,
               }} />
             </React.Fragment>
@@ -329,8 +327,7 @@ function ProjectCard({ project, onClick }) {
             onClick={(e) => e.stopPropagation()}
             className="flex items-center gap-2 text-blue-600 group-hover:text-blue-300 text-xs font-mono mb-4 hover:underline z-10 relative break-all"
           >
-            <FaExternalLinkAlt size={10} className="shrink-0" />
-            {project.url}
+            <FaExternalLinkAlt size={10} className="shrink-0" /> {project.url}
           </a>
         )}
         <p className="text-sm font-mono opacity-70 group-hover:opacity-100 transition-opacity mt-2">
@@ -368,8 +365,7 @@ function TrabajoCard({ trabajo }) {
             onClick={(e) => e.stopPropagation()}
             className="flex items-center gap-2 text-blue-600 group-hover:text-blue-300 text-xs font-mono mb-3 hover:underline z-10 relative break-all"
           >
-            <FaExternalLinkAlt size={10} className="shrink-0" />
-            {trabajo.url}
+            <FaExternalLinkAlt size={10} className="shrink-0" /> {trabajo.url}
           </a>
         )}
         <p className="text-sm font-mono opacity-70 group-hover:opacity-100 transition-opacity">{trabajo.summary}</p>
@@ -393,7 +389,7 @@ function TrabajoCard({ trabajo }) {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
-export default function ProjectsSlide() {
+export default function ProjectsSlide({ swiperRef }) {
   const [mode, setMode]           = useState(0);
   const [displayMode, setDisplay] = useState(0);
   const [selectedProject, setSel] = useState(null);
@@ -431,6 +427,7 @@ export default function ProjectsSlide() {
     <div className="relative h-full w-full overflow-hidden bg-white">
       <div className="flex flex-col items-center h-full w-full">
 
+        {/* Single big title */}
         <div style={{ marginTop: '3rem', marginBottom: '0.1rem', textAlign: 'center' }}>
           <h2
             ref={titleRef}
@@ -445,10 +442,12 @@ export default function ProjectsSlide() {
           </h2>
         </div>
 
+        {/* Dial — only rendered here, never bleeds to other slides */}
         <div style={{ marginBottom: '0.8rem' }}>
-          <DragDial mode={mode} onSwitch={handleSwitch} />
+          <DragDial mode={mode} onSwitch={handleSwitch} swiperRef={swiperRef} />
         </div>
 
+        {/* Content */}
         <div ref={contentRef} className="w-full max-w-5xl overflow-y-auto flex-1 px-8 pb-4">
           {displayMode === 0 ? (
             <div className="swiper-no-swiping grid grid-cols-1 md:grid-cols-2 gap-6 p-2">
