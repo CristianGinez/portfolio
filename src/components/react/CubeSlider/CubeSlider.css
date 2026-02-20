@@ -1,14 +1,15 @@
 /* src/components/react/CubeSlider/CubeSlider.css */
+/* CubeSlider.css */
+
 .swiper-slide {
   display: flex !important;
   justify-content: center;
   align-items: center;
   background-position: center;
   background-size: cover;
-  pointer-events: auto !important; 
+  pointer-events: auto !important;
 }
 
 .swiper-slide-active {
   z-index: 50 !important;
 }
-
