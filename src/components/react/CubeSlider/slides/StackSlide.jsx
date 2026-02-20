@@ -166,7 +166,7 @@ export default function StackSlide() {
                     {stack.skills.map((skill, idx) => (
                         <div key={idx} className="flex flex-col items-center gap-2 group">
                             <TechIcon name={skill.name} />
-                            <span className="text-[9px] md:text-[10px] font-mono text-gray-500 uppercase text-center max-w-[70px] leading-tight">
+                            <span className="text-[9px] md:text-[10px] font-mono text-gray-500 uppercase text-center max-w-17.5 leading-tight">
                                 {skill.name}
                             </span>
                         </div>
