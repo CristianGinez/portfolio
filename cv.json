@@ -17,20 +17,15 @@
     },
     "profiles": [
       {
-        "network": "X",
-        "username": "gnz",
-        "url": "https://x.com/CriCrignz"
-    },
-    {
         "network": "GitHub",
         "username": "CristianGinez",
-        "url": "https://github.com/CristianGinez"
-    },
-    {
+        "url": "https://github.com/CristianGinez" 
+      },
+      {
         "network": "LinkedIn",
         "username": "Cristian Paolo Ginez Campos",
         "url": "https://www.linkedin.com/in/cristian-paolo-ginez-campos/"
-    }]
+      }]
   },
   "work": [{
     "name": "DDigital Design Group",
