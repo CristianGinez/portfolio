@@ -27,7 +27,8 @@ export default function ContactSlide() {
       >
         {cv.basics.email}
       </a>
-      <div className="mt-12 flex gap-8">
+      
+      <div className="mt-12 flex items-center gap-8">
         {cv.basics.profiles.map((profile) => (
           <a
             key={profile.network}
@@ -39,6 +40,14 @@ export default function ContactSlide() {
             {profile.network}
           </a>
         ))}
+        
+        <a
+          href="/cv.pdf"
+          download="Cristian Paolo Ginez Campos - Curriculum Vitae.pdf"
+          className="px-4 py-2 text-sm font-mono font-bold text-black bg-white rounded hover:bg-gray-300 transition-colors"
+        >
+          Descargar CV
+        </a>
       </div>
     </div>
   );
