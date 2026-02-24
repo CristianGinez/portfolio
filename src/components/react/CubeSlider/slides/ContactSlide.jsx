@@ -8,8 +8,10 @@ export default function ContactSlide() {
 
   return (
     <div
-      className="relative flex flex-col items-center justify-center w-full h-full text-white"
+      className="flex flex-col items-center justify-center w-full text-white"
       style={{
+        position: 'absolute',
+        inset: 0,
         opacity: isActive ? 1 : 0,
         visibility: isActive ? 'visible' : 'hidden',
         transition: isActive
@@ -17,38 +19,34 @@ export default function ContactSlide() {
           : 'opacity 0.2s ease, visibility 0.2s step-end',
       }}
     >
-      {/* Añadimos translateZ para "sacar" el contenedor del bug 3D de Safari/Chrome 
-      */}
-      <div 
-        className="swiper-no-swiping flex flex-col items-center justify-center w-full max-w-lg px-6"
-        style={{ 
-          transform: 'translateZ(20px)', 
-          WebkitTransform: 'translateZ(20px)' 
-        }}
-      >
-        <h2 className="text-5xl md:text-6xl font-black mb-6 text-center drop-shadow-md">¿Hablamos?</h2>
-        <p className="text-lg md:text-xl mb-12 text-gray-400 text-center drop-shadow-sm">
+      {/* 1. EL SECRETO: Envolvemos TODO en un contenedor "escudo" con swiper-no-swiping. 
+             Así Swiper ignora los arrastres aquí, PERO no "toca" los enlaces directamente. */}
+      <div className="swiper-no-swiping flex flex-col items-center justify-center w-full z-10 relative">
+        <h2 className="text-6xl font-black mb-6">¿Hablamos?</h2>
+        <p className="text-xl mb-10 text-gray-400 max-w-lg text-center">
           Estoy disponible para nuevos retos y colaboraciones técnicas.
         </p>
 
-        {/* Cada botón es empujado aún más al frente en el eje Z */}
         <a
           href={`mailto:${cv.basics.email}`}
-          className="relative block text-center text-xl md:text-2xl border-b-2 border-white pb-2 mb-12 hover:text-gray-300 transition-all cursor-pointer"
-          style={{ transform: 'translateZ(30px)', WebkitTransform: 'translateZ(30px)' }}
+          onClick={(e) => e.stopPropagation()}
+          // 2. Eliminamos swiper-no-swiping del <a>. 
+          // 3. Usamos inline-flex, z-10 y relative (igual que en tus ProjectsSlide)
+          className="inline-flex items-center justify-center cursor-pointer text-2xl border-b-2 border-white pb-1 hover:text-gray-300 hover:border-gray-300 transition-all z-10 relative"
         >
           {cv.basics.email}
         </a>
 
-        <div className="flex flex-wrap items-center justify-center gap-4 w-full">
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-6 px-4">
           {cv.basics.profiles.map((profile) => (
             <a
               key={profile.network}
               href={profile.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2 text-sm font-mono hover:bg-white/10 rounded-lg transition-all cursor-pointer"
-              style={{ transform: 'translateZ(30px)', WebkitTransform: 'translateZ(30px)' }}
+              onClick={(e) => e.stopPropagation()}
+              // Aplicamos exactamente la misma arquitectura física
+              className="inline-flex items-center justify-center cursor-pointer text-sm font-mono hover:underline z-10 relative"
             >
               {profile.network}
             </a>
@@ -57,8 +55,9 @@ export default function ContactSlide() {
           <a
             href="/cv.pdf"
             download="Cristian Paolo Ginez Campos - Curriculum Vitae.pdf"
-            className="px-6 py-3 text-sm font-mono font-bold text-black bg-white rounded shadow-xl hover:bg-gray-200 transition-colors cursor-pointer ml-2"
-            style={{ transform: 'translateZ(30px)', WebkitTransform: 'translateZ(30px)' }}
+            onClick={(e) => e.stopPropagation()}
+            // Botón intacto visualmente, pero blindado contra Safari
+            className="inline-flex items-center justify-center cursor-pointer px-4 py-2 text-sm font-mono font-bold text-black bg-white rounded hover:bg-gray-300 transition-colors z-10 relative"
           >
             Descargar CV
           </a>
