@@ -8,10 +8,10 @@ export default function ContactSlide() {
 
   return (
     <div
-      className="flex flex-col items-center justify-center w-full text-white"
+      // Agregamos h-full para que tome el alto sin necesidad de "absolute"
+      className="flex flex-col items-center justify-center w-full h-full text-white"
       style={{
-        position: 'absolute',
-        inset: 0,
+        // ELIMINADO: position: 'absolute' e inset: 0
         opacity: isActive ? 1 : 0,
         visibility: isActive ? 'visible' : 'hidden',
         transition: isActive
@@ -27,7 +27,8 @@ export default function ContactSlide() {
 
       <a
         href={`mailto:${cv.basics.email}`}
-        className="swiper-no-swiping text-2xl border-b-2 border-white pb-1 hover:text-gray-300 hover:border-gray-300 transition-all"
+        // Agregamos: relative z-10
+        className="swiper-no-swiping relative z-10 text-2xl border-b-2 border-white pb-1 hover:text-gray-300 hover:border-gray-300 transition-all"
         style={{ touchAction: 'manipulation' }}
       >
         {cv.basics.email}
@@ -38,7 +39,8 @@ export default function ContactSlide() {
           <a
             key={profile.network}
             href={profile.url}
-            className="swiper-no-swiping text-sm font-mono hover:underline"
+            // Agregamos: relative z-10
+            className="swiper-no-swiping relative z-10 text-sm font-mono hover:underline"
             style={{ touchAction: 'manipulation' }}
             target="_blank"
             rel="noopener noreferrer"
@@ -50,7 +52,8 @@ export default function ContactSlide() {
         <a
           href="/cv.pdf"
           download="Cristian Paolo Ginez Campos - Curriculum Vitae.pdf"
-          className="swiper-no-swiping px-4 py-2 text-sm font-mono font-bold text-black bg-white rounded hover:bg-gray-300 transition-colors"
+          // Agregamos: relative z-10
+          className="swiper-no-swiping relative z-10 px-4 py-2 text-sm font-mono font-bold text-black bg-white rounded hover:bg-gray-300 transition-colors"
           style={{ touchAction: 'manipulation' }}
         >
           Descargar CV
