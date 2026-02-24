@@ -7,9 +7,10 @@
   align-items: center;
   background-position: center;
   background-size: cover;
-  pointer-events: auto !important;
+  pointer-events: none !important;
 }
 
 .swiper-slide-active {
   z-index: 50 !important;
+  pointer-events: auto !important;
 }
