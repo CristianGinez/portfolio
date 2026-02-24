@@ -8,8 +8,10 @@ export default function ContactSlide() {
 
   return (
     <div
-      className="flex flex-col items-center justify-center h-full w-full text-white"
+      className="flex flex-col items-center justify-center w-full text-white"
       style={{
+        position: 'absolute',
+        inset: 0,
         opacity: isActive ? 1 : 0,
         visibility: isActive ? 'visible' : 'hidden',
         transition: isActive
@@ -22,6 +24,7 @@ export default function ContactSlide() {
       <p className="text-xl mb-10 text-gray-400 max-w-lg text-center">
         Estoy disponible para nuevos retos y colaboraciones técnicas.
       </p>
+
       <a
         href={`mailto:${cv.basics.email}`}
         className="swiper-no-swiping text-2xl border-b-2 border-white pb-1 hover:text-gray-300 hover:border-gray-300 transition-all"
@@ -29,8 +32,8 @@ export default function ContactSlide() {
       >
         {cv.basics.email}
       </a>
-      
-      <div className="mt-12 flex items-center gap-8">
+
+      <div className="mt-12 flex flex-wrap items-center justify-center gap-6 px-4">
         {cv.basics.profiles.map((profile) => (
           <a
             key={profile.network}
@@ -43,7 +46,7 @@ export default function ContactSlide() {
             {profile.network}
           </a>
         ))}
-        
+
         <a
           href="/cv.pdf"
           download="Cristian Paolo Ginez Campos - Curriculum Vitae.pdf"
