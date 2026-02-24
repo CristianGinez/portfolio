@@ -6,18 +6,18 @@ export default function ContactSlide() {
   const swiperSlide = useSwiperSlide();
   const isActive = swiperSlide ? swiperSlide.isActive : true;
 
+  // Esta función evita que Swiper "robe" el toque en móviles
+  const stopPropagation = (e) => e.stopPropagation();
+
   return (
     <div
-      // Agregamos h-full para que tome el alto sin necesidad de "absolute"
       className="flex flex-col items-center justify-center w-full h-full text-white"
       style={{
-        // ELIMINADO: position: 'absolute' e inset: 0
         opacity: isActive ? 1 : 0,
         visibility: isActive ? 'visible' : 'hidden',
         transition: isActive
           ? 'opacity 0.4s ease 0.3s, visibility 0s'
           : 'opacity 0.2s ease, visibility 0.2s step-end',
-        touchAction: 'manipulation',
       }}
     >
       <h2 className="text-6xl font-black mb-6">¿Hablamos?</h2>
@@ -27,9 +27,10 @@ export default function ContactSlide() {
 
       <a
         href={`mailto:${cv.basics.email}`}
-        // Agregamos: relative z-10
-        className="swiper-no-swiping relative z-10 text-2xl border-b-2 border-white pb-1 hover:text-gray-300 hover:border-gray-300 transition-all"
-        style={{ touchAction: 'manipulation' }}
+        className="swiper-no-swiping relative z-50 text-2xl border-b-2 border-white pb-1 hover:text-gray-300 hover:border-gray-300 transition-all cursor-pointer"
+        onTouchStart={stopPropagation}
+        onPointerDown={stopPropagation}
+        onClick={stopPropagation}
       >
         {cv.basics.email}
       </a>
@@ -39,11 +40,12 @@ export default function ContactSlide() {
           <a
             key={profile.network}
             href={profile.url}
-            // Agregamos: relative z-10
-            className="swiper-no-swiping relative z-10 text-sm font-mono hover:underline"
-            style={{ touchAction: 'manipulation' }}
+            className="swiper-no-swiping relative z-50 text-sm font-mono hover:underline cursor-pointer"
             target="_blank"
             rel="noopener noreferrer"
+            onTouchStart={stopPropagation}
+            onPointerDown={stopPropagation}
+            onClick={stopPropagation}
           >
             {profile.network}
           </a>
@@ -52,9 +54,10 @@ export default function ContactSlide() {
         <a
           href="/cv.pdf"
           download="Cristian Paolo Ginez Campos - Curriculum Vitae.pdf"
-          // Agregamos: relative z-10
-          className="swiper-no-swiping relative z-10 px-4 py-2 text-sm font-mono font-bold text-black bg-white rounded hover:bg-gray-300 transition-colors"
-          style={{ touchAction: 'manipulation' }}
+          className="swiper-no-swiping relative z-50 px-4 py-2 text-sm font-mono font-bold text-black bg-white rounded hover:bg-gray-300 transition-colors cursor-pointer"
+          onTouchStart={stopPropagation}
+          onPointerDown={stopPropagation}
+          onClick={stopPropagation}
         >
           Descargar CV
         </a>
