@@ -14,16 +14,15 @@ export default function ContactSlide() {
         Estoy disponible para nuevos retos y colaboraciones técnicas.
       </p>
 
-      {/* Enlace de correo puro y duro, sin eventos raros ni detención de clicks */}
       <a
         href={`mailto:${cv.basics.email}`}
-        className="text-xl md:text-2xl border-b-2 border-white pb-2 mb-12 hover:text-gray-300 transition-all cursor-pointer"
+        className="swiper-no-swiping text-xl md:text-2xl border-b-2 border-white pb-2 mb-12 hover:text-gray-300 transition-all cursor-pointer"
+        style={{ touchAction: 'manipulation' }}
       >
         {cv.basics.email}
       </a>
 
-      {/* Contenedor de redes y CV */}
-      <div className="flex flex-wrap items-center justify-center gap-6 w-full">
+      <div className="swiper-no-swiping flex flex-wrap items-center justify-center gap-6 w-full" style={{ touchAction: 'manipulation' }}>
         {cv.basics.profiles.map((profile) => (
           <a
             key={profile.network}
