@@ -16,13 +16,12 @@ export default function ContactSlide() {
 
       <a
         href={`mailto:${cv.basics.email}`}
-        className="swiper-no-swiping text-xl md:text-2xl border-b-2 border-white pb-2 mb-12 hover:text-gray-300 transition-all cursor-pointer"
-        style={{ touchAction: 'manipulation' }}
+        className="text-xl md:text-2xl border-b-2 border-white pb-2 mb-12 hover:text-gray-300 transition-all cursor-pointer"
       >
         {cv.basics.email}
       </a>
 
-      <div className="swiper-no-swiping flex flex-wrap items-center justify-center gap-6 w-full" style={{ touchAction: 'manipulation' }}>
+      <div className="flex flex-wrap items-center justify-center gap-6 w-full">
         {cv.basics.profiles.map((profile) => (
           <a
             key={profile.network}

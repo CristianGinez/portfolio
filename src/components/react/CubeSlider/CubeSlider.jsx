@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectCube, Mousewheel, Pagination } from 'swiper/modules';
 
@@ -14,12 +14,29 @@ import StackSlide from './slides/StackSlide';
 import ContactSlide from './slides/ContactSlide';
 
 export default function CubeSlider() {
-  const swiperRef = useRef(null);
+  const swiperRef    = useRef(null);
+  const touchStartY  = useRef(0);
+  const [showContact, setShowContact] = useState(false);
+
+  const onSlideChange    = useCallback((s) => { if (s.activeIndex !== 4) setShowContact(false); }, []);
+  const onTransitionEnd  = useCallback((s) => { if (s.activeIndex === 4) setShowContact(true);  }, []);
+
+  const handleTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; };
+  const handleTouchEnd   = (e) => {
+    const dy = touchStartY.current - e.changedTouches[0].clientY;
+    // swipe up (dy > 50) does nothing (last slide), swipe down goes back
+    if (dy < -50 && swiperRef.current) {
+      setShowContact(false);
+      swiperRef.current.slidePrev();
+    }
+  };
 
   return (
-    <div className="h-full w-full bg-neutral-900">
+    <div className="relative h-full w-full bg-neutral-900">
       <Swiper
         onSwiper={(s) => { swiperRef.current = s; }}
+        onSlideChange={onSlideChange}
+        onTransitionEnd={onTransitionEnd}
         effect={'cube'}
         grabCursor={true}
         cubeEffect={{
@@ -58,10 +75,20 @@ export default function CubeSlider() {
           <StackSlide />
         </SwiperSlide>
 
-        <SwiperSlide className="bg-black text-white">
-          <ContactSlide />
-        </SwiperSlide>
+        {/* Placeholder negro para la animación del cubo — ContactSlide real está abajo */}
+        <SwiperSlide className="bg-black" />
       </Swiper>
+
+      {/* ContactSlide fuera del contexto 3D del Swiper para que pointer-events funcionen en mobile */}
+      {showContact && (
+        <div
+          className="absolute inset-0 z-50 bg-black text-white"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <ContactSlide />
+        </div>
+      )}
     </div>
   );
 }
