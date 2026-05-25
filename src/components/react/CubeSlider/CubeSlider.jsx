@@ -75,8 +75,10 @@ export default function CubeSlider() {
           <StackSlide />
         </SwiperSlide>
 
-        {/* Placeholder negro para la animación del cubo — ContactSlide real está abajo */}
-        <SwiperSlide className="bg-black" />
+        {/* ContactSlide dentro del cubo solo para la animación visual — el overlay de abajo maneja los clicks */}
+        <SwiperSlide className="bg-black text-white">
+          <ContactSlide />
+        </SwiperSlide>
       </Swiper>
 
       {/* ContactSlide fuera del contexto 3D del Swiper para que pointer-events funcionen en mobile */}
