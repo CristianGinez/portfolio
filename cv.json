@@ -238,6 +238,30 @@
   }],
   "projects": [
     {
+        "name": "EsLujo",
+        "isActive": true,
+        "startDate": "2026-01-01",
+        "description": "Tienda online de polos personalizados con diseño urbano para una marca peruana. Catálogo con filtros, guía de tallas interactiva y pedidos por WhatsApp.",
+        "highlights": [],
+        "url": "https://eslujoperu.com",
+        "keywords": [
+          "Next.js",
+          "React",
+          "TypeScript",
+          "Supabase",
+          "Cloudinary",
+          "Tailwind CSS"
+        ],
+        "gallery": [
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1779819673/01-home-hero_aerinu.png",
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1779819677/05-catalogo-grid_katlqj.png",
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1779819676/06-producto_qo0qnh.png",
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1779819673/09-tallas-full_i7pqix.png",
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1779819674/16-mobile-catalogo_oeyfmo.png"
+        ],
+        "fullDetails": "EsLujo es el sitio de e-commerce de una marca peruana de ropa urbana especializada en polos personalizados. Permite explorar el catálogo con filtros por categoría, género (hombre, mujer, niño, niña) y precio; ver fichas de producto individuales; consultar la guía de tallas interactiva; y hacer pedidos directamente por WhatsApp desde cualquier producto.\n\nDetrás hay un dashboard de administración protegido por contraseña donde el cliente gestiona productos, categorías dinámicas, guía de tallas, reseñas, barra de promociones, paleta de color del sitio e imágenes/videos. También incluye libro de reclamaciones electrónico (requisito legal en Perú) y está optimizado para SEO con Open Graph, sitemap y canonicals."
+    },
+    {
         "name": "Team LAG Website",
         "isActive": true,
         "startDate": "2025-11-01",
