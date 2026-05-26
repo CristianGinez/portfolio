@@ -4,16 +4,16 @@ import cv from '@cv';
 
 export default function AboutSlide() {
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full p-12 max-w-4xl mx-auto">
-      <h2 className="text-4xl font-bold mb-8 border-b-4 border-blue-600 pb-2">
+    <div className="flex flex-col items-center justify-center h-full w-full p-8 md:p-12 max-w-4xl mx-auto">
+      <h2 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8 border-b-4 border-blue-600 pb-2">
         PROFILE_INIT
       </h2>
-      
-      <p className="text-xl md:text-2xl leading-relaxed text-center font-light text-gray-700">
+
+      <p className="text-base md:text-2xl leading-relaxed text-center font-light text-gray-700">
         "No solo escribo código, diseño soluciones."
       </p>
 
-      <div className="mt-8 text-center md:text-lg text-gray-600 space-y-4">
+      <div className="mt-6 md:mt-8 text-sm md:text-lg text-center text-gray-600 space-y-4">
         <p>
           {cv.basics.websitesummary}
         </p>

@@ -72,15 +72,15 @@ export default function ProjectDetail({ project, onClose }) {
                 </span>
             </div>
 
-            <h2 className="text-5xl md:text-8xl font-black mb-10 uppercase leading-[0.9] tracking-tighter anim-item">
+            <h2 className="text-3xl md:text-8xl font-black mb-6 md:mb-10 uppercase leading-[0.9] tracking-tighter anim-item">
                 {project.title}
             </h2>
 
-            <div className="flex flex-wrap gap-6 mb-16 anim-item">
+            <div className="flex flex-wrap gap-4 md:gap-6 mb-8 md:mb-16 anim-item">
                 {project.previewUrl && (
-                    <button 
+                    <button
                         onClick={() => setShowEmbed(!showEmbed)}
-                        className={`cursor-pointer flex items-center gap-3 px-8 py-4 font-bold text-sm tracking-widest transition-all border-2 ${
+                        className={`cursor-pointer flex items-center gap-3 px-5 py-3 md:px-8 md:py-4 font-bold text-sm tracking-widest transition-all border-2 ${
                             showEmbed 
                             ? 'bg-white text-black border-white' 
                             : 'bg-transparent text-white border-white hover:bg-white hover:text-black'
@@ -91,11 +91,11 @@ export default function ProjectDetail({ project, onClose }) {
                 )}
                 
                 {project.link && (
-                     <a 
-                        href={project.link} 
-                        target="_blank" 
+                     <a
+                        href={project.link}
+                        target="_blank"
                         rel="noreferrer"
-                        className="flex items-center gap-3 px-8 py-4 font-bold text-sm tracking-widest border-2 border-transparent text-gray-400 hover:text-white hover:border-gray-600 transition-all"
+                        className="flex items-center gap-3 px-5 py-3 md:px-8 md:py-4 font-bold text-sm tracking-widest border-2 border-transparent text-gray-400 hover:text-white hover:border-gray-600 transition-all"
                     >
                         <FaExternalLinkAlt /> VISITAR SITIO
                     </a>
@@ -117,7 +117,7 @@ export default function ProjectDetail({ project, onClose }) {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 anim-item">
                     
                     <div className="lg:col-span-2 space-y-8">
-                        <p className="text-xl md:text-2xl leading-relaxed text-gray-300 font-light">
+                        <p className="text-base md:text-2xl leading-relaxed text-gray-300 font-light">
                             {project.description}
                         </p>
                         <div className="text-gray-400 leading-loose font-mono text-sm border-t border-gray-800 pt-8">

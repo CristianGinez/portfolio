@@ -10,7 +10,7 @@ export default function HeroSlide() {
       className="flex flex-col items-center justify-center w-full text-center p-8 bg-white"
     >
       <div className="border-4 border-black p-10 relative">
-        <h1 className="text-6xl md:text-8xl font-black uppercase tracking-tighter">
+        <h1 className="text-4xl sm:text-6xl md:text-8xl font-black uppercase tracking-tighter">
           {firstName}<br />{lastName}
         </h1>
         <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white px-4">

@@ -210,7 +210,7 @@ function ProjectCard({ project, onClick }) {
     >
       <div>
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-2xl font-bold">{project.name}</h3>
+          <h3 className="text-xl md:text-2xl font-bold">{project.name}</h3>
           <span className="text-sm font-mono border border-gray-300 group-hover:border-white px-2 py-0.5 rounded-full shrink-0">
             {new Date(project.startDate).getFullYear()}
           </span>
@@ -335,7 +335,7 @@ export default function ProjectsSlide({ swiperRef }) {
         <DragDial mode={mode} onSwitch={handleSwitch} swiperRef={swiperRef} />
       </div>
 
-      <div ref={contentRef} className="w-full max-w-5xl overflow-y-auto flex-1 px-8 pb-4">
+      <div ref={contentRef} className="w-full max-w-5xl overflow-y-auto flex-1 px-4 md:px-8 pb-4">
         {displayMode === 0 ? (
           <div className="swiper-no-swiping grid grid-cols-1 md:grid-cols-2 gap-6 p-2">
             {cv.projects.map((p, i) => <ProjectCard key={i} project={p} onClick={() => setSel(p)} />)}
