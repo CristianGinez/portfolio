@@ -6,7 +6,8 @@ import cv from '@cv';
 import gsap from 'gsap';
 
 const trabajos = cv.work ?? [];
-const MODES = ['PROYECTOS', 'TRABAJOS'];
+const clientes = cv.freelance ?? [];
+const MODES = ['PROPIOS', 'CLIENTES', 'TRABAJOS'];
 const TOTAL_MODES = MODES.length;
 
 const SWITCH_THRESHOLD = 70;
@@ -336,11 +337,17 @@ export default function ProjectsSlide({ swiperRef }) {
       </div>
 
       <div ref={contentRef} className="w-full max-w-5xl overflow-y-auto flex-1 px-4 md:px-8 pb-4">
-        {displayMode === 0 ? (
+        {displayMode === 0 && (
           <div className="swiper-no-swiping grid grid-cols-1 md:grid-cols-2 gap-6 p-2">
             {cv.projects.map((p, i) => <ProjectCard key={i} project={p} onClick={() => setSel(p)} />)}
           </div>
-        ) : (
+        )}
+        {displayMode === 1 && (
+          <div className="swiper-no-swiping grid grid-cols-1 md:grid-cols-2 gap-6 p-2">
+            {clientes.map((p, i) => <ProjectCard key={i} project={p} onClick={() => setSel(p)} />)}
+          </div>
+        )}
+        {displayMode === 2 && (
           <div className="swiper-no-swiping grid grid-cols-1 md:grid-cols-2 gap-6 p-2">
             {trabajos.map((t, i) => <TrabajoCard key={i} trabajo={t} />)}
           </div>
