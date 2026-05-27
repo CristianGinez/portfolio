@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 import { useSwiperSlide } from 'swiper/react';
 import ProjectDetail from './ProjectDetail';
@@ -10,7 +10,7 @@ const clientes = cv.freelance ?? [];
 const MODES = ['PROPIOS', 'CLIENTES', 'TRABAJOS'];
 const TOTAL_MODES = MODES.length;
 
-const SWITCH_THRESHOLD = 70;
+const SWITCH_THRESHOLD = 150;
 const MAX_DRAG_FREE    = 100;
 const RUBBER_FACTOR    = 0.20;
 const TICK_COUNT       = 30;
@@ -56,28 +56,48 @@ function DragDial({ mode, onSwitch, swiperRef }) {
   const rulerRef  = useRef(null);
   const needleRef = useRef(null);
   const dotRef    = useRef(null);
-  const drag      = useRef({ active: false, startX: 0, startY: 0, offset: 0, hasSwitched: false, locked: false });
-  const [liveOffset, setLiveOffset] = useState(0);
+  const modeRef   = useRef(mode);
 
-  const atStart = mode === 0;
-  const atEnd   = mode === TOTAL_MODES - 1;
+  const drag = useRef({ active: false, startX: 0, startY: 0, startModeX: 0, locked: false });
+  // liveRaw drives the needle in real-time during drag (unresisted position)
+  const [liveRaw, setLiveRaw] = useState(() => -mode * SWITCH_THRESHOLD);
+
+  useEffect(() => {
+    if (!drag.current.active) {
+      modeRef.current = mode;
+      setLiveRaw(-mode * SWITCH_THRESHOLD);
+    }
+  }, [mode]);
+
+  const modePercents  = MODES.map((_, i) => (i * 2 + 1) / (TOTAL_MODES * 2) * 100);
+  const totalRange    = (TOTAL_MODES - 1) * SWITCH_THRESHOLD;
+  const rawProgress   = totalRange > 0 ? -liveRaw / totalRange : 0;
+  const needlePercent = modePercents[0] + Math.max(0, Math.min(1, rawProgress)) * (modePercents[TOTAL_MODES - 1] - modePercents[0]);
 
   const flashNeedle = useCallback(() => {
     gsap.timeline()
-      .to([needleRef.current, dotRef.current], { scaleY: 1.5, background: '#000', duration: 0.08, ease: 'power3.out' })
-      .to([needleRef.current, dotRef.current], { scaleY: 1, background: '#111', duration: 0.25, ease: 'elastic.out(1,0.4)' });
+      .to([needleRef.current, dotRef.current], { scaleY: 2.8, scaleX: 1.4, background: '#000', duration: 0.06, ease: 'power3.out' })
+      .to([needleRef.current, dotRef.current], { scaleY: 1, scaleX: 1, background: '#111', duration: 0.35, ease: 'elastic.out(1.8,0.4)' });
   }, []);
 
-  const snapBack = useCallback(() => {
-    gsap.to(rulerRef.current, { x: 0, duration: 0.5, ease: 'elastic.out(1,0.55)' });
-    setLiveOffset(0);
+  const snapToMode = useCallback(() => {
+    const target = -modeRef.current * SWITCH_THRESHOLD;
+    gsap.to(rulerRef.current, { x: target, duration: 0.45, ease: 'elastic.out(1,0.6)' });
+    setLiveRaw(target); // needle springs to final stop via CSS transition
     if (swiperRef?.current) swiperRef.current.allowTouchMove = true;
   }, [swiperRef]);
 
   const startDrag = useCallback((clientX, clientY) => {
     gsap.killTweensOf(rulerRef.current);
-    drag.current = { active: true, startX: clientX, startY: clientY, offset: 0, hasSwitched: false, locked: false };
-  }, []);
+    const modeX = -modeRef.current * SWITCH_THRESHOLD;
+    gsap.set(rulerRef.current, { x: modeX }); // cancel any in-flight snap, lock to mode position
+    setLiveRaw(modeX);
+    drag.current = {
+      active: true, startX: clientX, startY: clientY,
+      startModeX: modeX,
+      locked: false,
+    };
+  }, [setLiveRaw]);
 
   const moveDrag = useCallback((clientX, clientY) => {
     if (!drag.current.active) return;
@@ -95,31 +115,64 @@ function DragDial({ mode, onSwitch, swiperRef }) {
       if (swiperRef?.current) swiperRef.current.allowTouchMove = false;
     }
 
-    let bounded = deltaX;
-    if (atStart && deltaX > 0)    bounded = rubberBand(deltaX, 28, 0.10);
-    else if (atEnd && deltaX < 0) bounded = rubberBand(deltaX, 28, 0.10);
-    else                           bounded = rubberBand(deltaX, MAX_DRAG_FREE, RUBBER_FACTOR);
+    const raw  = drag.current.startModeX + deltaX;
+    const minX = -(TOTAL_MODES - 1) * SWITCH_THRESHOLD;
+    const maxX = 0;
 
-    drag.current.offset = bounded;
-    gsap.set(rulerRef.current, { x: bounded });
-    setLiveOffset(bounded);
+    // dist = displacement from current mode origin (not total travel)
+    const dist    = deltaX;
+    const absDist = Math.abs(dist);
 
-    if (!drag.current.hasSwitched && Math.abs(deltaX) >= SWITCH_THRESHOLD) {
-      const nextMode = deltaX < 0 ? mode + 1 : mode - 1;
-      if (nextMode >= 0 && nextMode < TOTAL_MODES) {
-        drag.current.hasSwitched = true;
-        drag.current.startX = clientX;
+    // Soft resistance zone before each mode boundary (lighter than edge rubber-band)
+    const SOFT_START  = SWITCH_THRESHOLD - 50; // free travel before resistance kicks in
+    const SOFT_FACTOR = 0.18;                  // speed inside soft zone (heavy resistance)
+
+    let visual;
+    if (raw > maxX) {
+      // Left edge: full rubber-band
+      visual = maxX + (raw - maxX) * 0.12;
+    } else if (raw < minX) {
+      // Right edge: full rubber-band
+      visual = minX + (raw - minX) * 0.12;
+    } else if (absDist > SOFT_START) {
+      // Approaching next mode: soft resistance (same feel as edge, but lighter)
+      const excess = absDist - SOFT_START;
+      visual = drag.current.startModeX + Math.sign(dist) * (SOFT_START + excess * SOFT_FACTOR);
+    } else {
+      // Free zone: 1-to-1 with finger
+      visual = raw;
+    }
+
+    gsap.set(rulerRef.current, { x: visual });
+    setLiveRaw(visual); // needle follows visual — slows in soft zone, reinforcing the boundary feel
+
+    // Mode switch fires at full SWITCH_THRESHOLD from origin (not midpoint)
+    if (dist < -SWITCH_THRESHOLD) {
+      const newMode = Math.min(TOTAL_MODES - 1, modeRef.current + 1);
+      if (newMode !== modeRef.current) {
+        drag.current.startX     = clientX;
+        drag.current.startModeX = -newMode * SWITCH_THRESHOLD;
+        modeRef.current = newMode;
         flashNeedle();
-        onSwitch(nextMode);
+        onSwitch(newMode);
+      }
+    } else if (dist > SWITCH_THRESHOLD) {
+      const newMode = Math.max(0, modeRef.current - 1);
+      if (newMode !== modeRef.current) {
+        drag.current.startX     = clientX;
+        drag.current.startModeX = -newMode * SWITCH_THRESHOLD;
+        modeRef.current = newMode;
+        flashNeedle();
+        onSwitch(newMode);
       }
     }
-  }, [mode, atStart, atEnd, onSwitch, flashNeedle, swiperRef]);
+  }, [swiperRef, flashNeedle, onSwitch]);
 
   const endDrag = useCallback(() => {
     if (!drag.current.active) return;
     drag.current.active = false;
-    snapBack();
-  }, [snapBack]);
+    snapToMode();
+  }, [snapToMode]);
 
   const onPointerDown = (e) => { startDrag(e.clientX, e.clientY); e.currentTarget.setPointerCapture(e.pointerId); };
   const onPointerMove = (e) => moveDrag(e.clientX, e.clientY);
@@ -128,82 +181,54 @@ function DragDial({ mode, onSwitch, swiperRef }) {
   const onTouchMove   = (e) => { const t = e.touches[0]; moveDrag(t.clientX, t.clientY); if (drag.current.locked) e.preventDefault(); };
   const onTouchEnd    = ()  => endDrag();
 
-  const progress = Math.min(1, Math.abs(liveOffset) / SWITCH_THRESHOLD);
-
   return (
     <div
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'ew-resize', userSelect: 'none', touchAction: 'pan-y' }}
       onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
       onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} onTouchCancel={onTouchEnd}
     >
-      {/* Labels */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 360, marginBottom: 8, height: 28 }}>
-        <div style={{ width: 160, display: 'flex', justifyContent: 'flex-end', paddingRight: 16, overflow: 'hidden' }}>
-          {mode > 0 && (
-            <span style={{
-              fontSize: 11, letterSpacing: 4, fontWeight: 900, fontFamily: 'monospace', color: '#111',
-              opacity: liveOffset > 0 ? 0.14 + progress * 0.65 : 0.14,
-              transition: drag.current.active ? 'none' : 'opacity 0.4s ease',
-              whiteSpace: 'nowrap',
-            }}>{MODES[mode - 1]}</span>
-          )}
-        </div>
-        <div style={{ width: 1, height: 14, background: '#ddd', flexShrink: 0 }} />
-        <div style={{ width: 160, display: 'flex', justifyContent: 'flex-start', paddingLeft: 16, overflow: 'hidden' }}>
-          {mode < TOTAL_MODES - 1 && (
-            <span style={{
-              fontSize: 11, letterSpacing: 4, fontWeight: 900, fontFamily: 'monospace', color: '#111',
-              opacity: liveOffset < 0 ? 0.14 + progress * 0.65 : 0.14,
-              transition: drag.current.active ? 'none' : 'opacity 0.4s ease',
-              whiteSpace: 'nowrap',
-            }}>{MODES[mode + 1]}</span>
-          )}
-        </div>
-      </div>
-
-      {/* Ruler */}
+      {/* Ruler with zone separators */}
       <div style={{ position: 'relative', width: 310, height: 48, overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 60, background: 'linear-gradient(to right, white, transparent)', zIndex: 3, pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 60, background: 'linear-gradient(to left, white, transparent)', zIndex: 3, pointerEvents: 'none' }} />
-        <div ref={needleRef} style={{ position: 'absolute', left: '50%', bottom: 10, transform: 'translateX(-50%)', width: 2.5, height: 26, background: '#111', borderRadius: '2px 2px 0 0', zIndex: 5, transformOrigin: 'bottom center' }} />
-        <div ref={dotRef} style={{ position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)', width: 7, height: 7, borderRadius: '50%', background: '#111', zIndex: 5, transformOrigin: 'center' }} />
+        {MODES.slice(1).map((_, i) => (
+          <div key={i} style={{
+            position: 'absolute', zIndex: 4, pointerEvents: 'none',
+            left: `${(i + 1) / TOTAL_MODES * 100}%`,
+            top: 8, bottom: 8, width: 1, background: '#e0e0e0',
+          }} />
+        ))}
+        <div ref={needleRef} style={{
+          position: 'absolute', zIndex: 5,
+          left: `${needlePercent}%`, bottom: 10,
+          transform: 'translateX(-50%)',
+          width: 2.5, height: 26, background: '#111',
+          borderRadius: '2px 2px 0 0', transformOrigin: 'bottom center',
+          transition: drag.current.active ? 'left 0.04s linear' : 'left 0.38s cubic-bezier(0.34,1.56,0.64,1)',
+        }} />
+        <div ref={dotRef} style={{
+          position: 'absolute', zIndex: 5,
+          left: `${needlePercent}%`, bottom: 6,
+          transform: 'translateX(-50%)',
+          width: 7, height: 7, borderRadius: '50%', background: '#111',
+          transformOrigin: 'center',
+          transition: drag.current.active ? 'left 0.04s linear' : 'left 0.38s cubic-bezier(0.34,1.56,0.64,1)',
+        }} />
         <Ruler rulerRef={rulerRef} />
       </div>
 
-      {/* Position dots */}
-      <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-        {MODES.map((label, i) => {
-          const isActive    = i === mode;
-          const approaching = liveOffset < 0 ? i === mode + 1 : (liveOffset > 0 ? i === mode - 1 : false);
-          const trackingLeft =
-            mode < i - 1  ? '0%' :
-            mode > i      ? '100%' :
-            mode === i - 1 ? (liveOffset < 0 ? `${progress * 100}%` : '0%') :
-            /* mode === i */ (liveOffset > 0 ? `${(1 - progress) * 100}%` : '100%');
-          return (
-            <React.Fragment key={label}>
-              {i > 0 && (
-                <div style={{ position: 'relative', width: 48, height: 2, background: '#e8e8e8', borderRadius: 2 }}>
-                  <div style={{
-                    position: 'absolute', top: '50%',
-                    left: trackingLeft,
-                    transform: 'translate(-50%, -50%)',
-                    width: 6, height: 6, borderRadius: '50%', background: '#111',
-                    transition: drag.current.active ? 'none' : 'left 0.45s cubic-bezier(0.34,1.56,0.64,1)',
-                  }} />
-                </div>
-              )}
-              <div style={{
-                width: isActive ? 9 : 7, height: isActive ? 9 : 7, borderRadius: '50%',
-                background: isActive ? '#111' : '#d0d0d0',
-                border: isActive ? 'none' : '1.5px solid #ccc',
-                opacity: isActive ? 1 : (approaching ? 0.4 + progress * 0.5 : 0.22),
-                transition: drag.current.active ? 'none' : 'all 0.4s cubic-bezier(0.34,1.56,0.64,1)',
-                flexShrink: 0,
-              }} />
-            </React.Fragment>
-          );
-        })}
+      {/* Mode labels — discrete active/inactive */}
+      <div style={{ width: 310, display: 'flex', marginTop: 10 }}>
+        {MODES.map((label, i) => (
+          <div key={label} style={{ width: `${100 / TOTAL_MODES}%`, display: 'flex', justifyContent: 'center' }}>
+            <span style={{
+              fontSize: 10, letterSpacing: 3, fontWeight: 900, fontFamily: 'monospace', color: '#111',
+              opacity: i === mode ? 1 : 0.18,
+              transition: 'opacity 0.2s ease',
+              whiteSpace: 'nowrap',
+            }}>{label}</span>
+          </div>
+        ))}
       </div>
 
       <div style={{ fontSize: 9, color: '#c8c8c8', letterSpacing: 3, fontFamily: 'monospace', marginTop: 8 }}>

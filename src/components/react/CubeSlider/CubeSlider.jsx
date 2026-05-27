@@ -16,19 +16,31 @@ import ContactSlide from './slides/ContactSlide';
 export default function CubeSlider() {
   const swiperRef    = useRef(null);
   const touchStartY  = useRef(0);
+  const mouseStartY  = useRef(0);
+  const mouseDown    = useRef(false);
   const [showContact, setShowContact] = useState(false);
 
   const onSlideChange    = useCallback((s) => { if (s.activeIndex !== 4) setShowContact(false); }, []);
   const onTransitionEnd  = useCallback((s) => { if (s.activeIndex === 4) setShowContact(true);  }, []);
 
+  const goBack = useCallback(() => {
+    if (!swiperRef.current) return;
+    setShowContact(false);
+    swiperRef.current.slidePrev();
+  }, []);
+
   const handleTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; };
   const handleTouchEnd   = (e) => {
     const dy = touchStartY.current - e.changedTouches[0].clientY;
-    // swipe up (dy > 50) does nothing (last slide), swipe down goes back
-    if (dy < -50 && swiperRef.current) {
-      setShowContact(false);
-      swiperRef.current.slidePrev();
-    }
+    if (dy < -50) goBack();
+  };
+
+  const handleWheel      = (e) => { if (e.deltaY < -30) goBack(); };
+  const handleMouseDown  = (e) => { mouseStartY.current = e.clientY; mouseDown.current = true; };
+  const handleMouseUp    = (e) => {
+    if (!mouseDown.current) return;
+    mouseDown.current = false;
+    if (mouseStartY.current - e.clientY < -50) goBack();
   };
 
   return (
@@ -87,6 +99,9 @@ export default function CubeSlider() {
           className="absolute inset-0 z-50 bg-black text-white"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
+          onWheel={handleWheel}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
         >
           <ContactSlide />
         </div>

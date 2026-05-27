@@ -1,7 +1,18 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useCallback } from 'react';
 import { useSwiperSlide } from 'swiper/react';
 import gsap from 'gsap';
 import cv from '@cv';
+
+const SI_SLUGS = {
+  'html':       'html5',
+  'css':        'css3',
+  'tailwind':   'tailwindcss',
+  'springboot': 'spring',
+  'nextjs':     'nextdotjs',
+  'nodejs':     'nodedotjs',
+  'dotnet':     'dotnet',
+  'cplusplus':  'cplusplus',
+};
 
 const TechIcon = ({ name }) => {
   const getSlugs = (rawName) => {
@@ -12,11 +23,11 @@ const TechIcon = ({ name }) => {
       simpleIcon: base.replace(/\./g, 'dot').replace(/\+/g, 'plus').replace(/#/g, 'sharp'),
       hyphenated: lower.replace(/\s+/g, '-').replace(/\./g, '-').replace(/\+/g, 'cpp').replace(/#/g, 'sharp'),
     };
-    if (base === 'nextjs') variations.simpleIcon = 'nextdotjs';
-    if (base === 'nodejs') variations.simpleIcon = 'nodedotjs';
     if (base === 'dotnet' || base === '.net') { variations.base = 'dotnet'; variations.simpleIcon = 'dotnet'; }
-    if (base === 'c++') { variations.simpleIcon = 'cplusplus'; variations.base = 'cpp'; }
+    if (base === 'c++') { variations.simpleIcon = 'cplusplus'; variations.base = 'cplusplus'; }
     if (base === 'sql') { variations.base = 'database'; }
+    if (SI_SLUGS[variations.simpleIcon]) variations.simpleIcon = SI_SLUGS[variations.simpleIcon];
+    if (SI_SLUGS[base]) variations.simpleIcon = SI_SLUGS[base];
     return variations;
   };
 
@@ -81,11 +92,13 @@ export default function StackSlide() {
 
   const [cards, setCards] = useState(stacks);
   const isAnimating = useRef(false);
+  const topCardRef  = useRef(null);
 
-  const handleCardClick = () => {
+  const handleCardClick = useCallback(() => {
     if (isAnimating.current || cards.length <= 1) return;
+    const topCard = topCardRef.current;
+    if (!topCard) return;
     isAnimating.current = true;
-    const topCard = document.getElementById(`card-${cards[0].id}`);
 
     gsap.timeline({
       onComplete: () => {
@@ -94,7 +107,7 @@ export default function StackSlide() {
         isAnimating.current = false;
       },
     }).to(topCard, { x: '120%', y: 20, rotation: 15, opacity: 0, scale: 0.9, duration: 0.35, ease: 'power2.in' });
-  };
+  }, [cards.length]);
 
   if (!cards.length) return null;
 
@@ -118,8 +131,10 @@ export default function StackSlide() {
           return (
             <div
               key={stack.id}
-              id={`card-${stack.id}`}
+              ref={isTop ? topCardRef : null}
               onClick={isTop ? handleCardClick : undefined}
+              onPointerDown={isTop ? (e) => e.stopPropagation() : undefined}
+
               style={{
                 zIndex: index,
                 transform: `scale(${1 - (cards.length - 1 - index) * 0.05}) translateY(${(cards.length - 1 - index) * 10}px)`,
@@ -132,7 +147,7 @@ export default function StackSlide() {
                 w-[85%] md:w-full max-w-3xl h-full p-4 md:p-10
                 bg-white border border-gray-200 shadow-xl rounded-2xl
                 transition-all duration-300 ease-out
-                ${isTop ? 'cursor-pointer' : 'pointer-events-none'}
+                ${isTop ? 'cursor-pointer swiper-no-swiping' : 'pointer-events-none'}
               `}
             >
               <h2 className="text-xl md:text-3xl font-bold mb-2 md:mb-4 tracking-[0.2em] uppercase text-center">
