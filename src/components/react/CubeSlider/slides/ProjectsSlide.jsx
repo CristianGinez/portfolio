@@ -139,21 +139,25 @@ function DragDial({ mode, onSwitch, swiperRef }) {
       {/* Labels */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 360, marginBottom: 8, height: 28 }}>
         <div style={{ width: 160, display: 'flex', justifyContent: 'flex-end', paddingRight: 16, overflow: 'hidden' }}>
-          <span style={{
-            fontSize: 11, letterSpacing: 4, fontWeight: 900, fontFamily: 'monospace', color: '#111',
-            opacity: mode === 0 ? 1 : (liveOffset > 0 ? 0.14 + progress * 0.65 : 0.14),
-            transition: drag.current.active ? 'none' : 'opacity 0.4s ease',
-            whiteSpace: 'nowrap',
-          }}>PROYECTOS</span>
+          {mode > 0 && (
+            <span style={{
+              fontSize: 11, letterSpacing: 4, fontWeight: 900, fontFamily: 'monospace', color: '#111',
+              opacity: liveOffset > 0 ? 0.14 + progress * 0.65 : 0.14,
+              transition: drag.current.active ? 'none' : 'opacity 0.4s ease',
+              whiteSpace: 'nowrap',
+            }}>{MODES[mode - 1]}</span>
+          )}
         </div>
         <div style={{ width: 1, height: 14, background: '#ddd', flexShrink: 0 }} />
         <div style={{ width: 160, display: 'flex', justifyContent: 'flex-start', paddingLeft: 16, overflow: 'hidden' }}>
-          <span style={{
-            fontSize: 11, letterSpacing: 4, fontWeight: 900, fontFamily: 'monospace', color: '#111',
-            opacity: mode === 1 ? 1 : (liveOffset < 0 ? 0.14 + progress * 0.65 : 0.14),
-            transition: drag.current.active ? 'none' : 'opacity 0.4s ease',
-            whiteSpace: 'nowrap',
-          }}>TRABAJOS</span>
+          {mode < TOTAL_MODES - 1 && (
+            <span style={{
+              fontSize: 11, letterSpacing: 4, fontWeight: 900, fontFamily: 'monospace', color: '#111',
+              opacity: liveOffset < 0 ? 0.14 + progress * 0.65 : 0.14,
+              transition: drag.current.active ? 'none' : 'opacity 0.4s ease',
+              whiteSpace: 'nowrap',
+            }}>{MODES[mode + 1]}</span>
+          )}
         </div>
       </div>
 
@@ -170,14 +174,19 @@ function DragDial({ mode, onSwitch, swiperRef }) {
       <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
         {MODES.map((label, i) => {
           const isActive    = i === mode;
-          const approaching = (i === 1 && liveOffset < 0) || (i === 0 && liveOffset > 0);
+          const approaching = liveOffset < 0 ? i === mode + 1 : (liveOffset > 0 ? i === mode - 1 : false);
+          const trackingLeft =
+            mode < i - 1  ? '0%' :
+            mode > i      ? '100%' :
+            mode === i - 1 ? (liveOffset < 0 ? `${progress * 100}%` : '0%') :
+            /* mode === i */ (liveOffset > 0 ? `${(1 - progress) * 100}%` : '100%');
           return (
             <React.Fragment key={label}>
               {i > 0 && (
                 <div style={{ position: 'relative', width: 48, height: 2, background: '#e8e8e8', borderRadius: 2 }}>
                   <div style={{
                     position: 'absolute', top: '50%',
-                    left: mode === 0 ? `${liveOffset < 0 ? progress * 100 : 0}%` : `${liveOffset > 0 ? (1 - progress) * 100 : 100}%`,
+                    left: trackingLeft,
                     transform: 'translate(-50%, -50%)',
                     width: 6, height: 6, borderRadius: '50%', background: '#111',
                     transition: drag.current.active ? 'none' : 'left 0.45s cubic-bezier(0.34,1.56,0.64,1)',
