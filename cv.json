@@ -302,6 +302,33 @@
   "projects": [],
   "freelance": [
     {
+        "name": "Moldimetal",
+        "isActive": true,
+        "startDate": "2026-06-01",
+        "description": "Landing page institucional para empresa metalmecánica peruana: video hero, SEO completo, página de cotización con mapa y envío por WhatsApp.",
+        "url": "https://www.moldimetal.com.pe",
+        "keywords": [
+          "Astro",
+          "TypeScript",
+          "CSS",
+          "Google Maps",
+          "WhatsApp API"
+        ],
+        "gallery": [
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1780957181/moldimetal-hero_j8an2p.png",
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1780957179/moldimetal-nosotros_ilkplm.png",
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1780957178/moldimetal-servicios_acate5.png",
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1780957179/moldimetal-porque_gxzdtt.png",
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1780957179/moldimetal-cotizar_eybefx.png"
+        ],
+        "fullDetails": "Sitio estático construido con Astro 6 y desplegado en Netlify. Implementa un sistema de diseño industrial (paleta near-black + acento amarillo, tipografías Chakra Petch y Barlow, motivo clip-path chamfer) definido completamente con CSS Custom Properties. El hero usa un video de fondo generado con IA (Veo/Gemini) con cropping CSS para ocultar la marca de agua. Incluye SEO técnico completo: astro-seo, sitemap.xml, robots.txt, JSON-LD LocalBusiness con coordenadas exactas y OpenGraph/Twitter Cards. La página /cotizar concentra el formulario de contacto, datos de la empresa, mapa embebido con pin de precisión y envío por WhatsApp con mensaje pre-armado. Se configuraron registros DNS (SPF, DKIM, MX, autodiscover) en Netlify para el correo corporativo moldimetal.com.pe alojado en Microsoft 365 vía GoDaddy.",
+        "highlights": [
+          "Sistema de diseño industrial completo con CSS Custom Properties: paleta near-black, tipografías display y motion de entrada (reveal animation)",
+          "Video hero generado con Veo/Gemini integrado como background con cropping CSS y fallback poster — sin re-encoding",
+          "SEO técnico: JSON-LD LocalBusiness, sitemap, OpenGraph, Twitter Cards y coordenadas GPS exactas en el embed de Google Maps"
+        ]
+    },
+    {
         "name": "RHINOST Trailers",
         "isActive": true,
         "startDate": "2026-05-03",
