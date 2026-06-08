@@ -47,7 +47,7 @@ const TechIcon = ({ name }) => {
     <img
       src={`/icons/${slug}.svg`}
       alt={name}
-      loading="lazy"
+      loading="eager"
       className="w-10 h-10 md:w-12 md:h-12 object-contain drop-shadow-sm"
     />
   );
