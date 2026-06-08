@@ -3,71 +3,52 @@ import { useSwiperSlide } from 'swiper/react';
 import gsap from 'gsap';
 import cv from '@cv';
 
-const SI_SLUGS = {
-  'html':       'html5',
-  'css':        'css3',
-  'tailwind':   'tailwindcss',
-  'springboot': 'spring',
-  'nextjs':     'nextdotjs',
-  'nodejs':     'nodedotjs',
-  'dotnet':     'dotnet',
-  'cplusplus':  'cplusplus',
+const ICON_MAP = {
+  'HTML':        'html',
+  'CSS':         'css',
+  'JavaScript':  'javascript',
+  'TypeScript':  'typescript',
+  'Tailwind':    'tailwind',
+  'Java':        'java',
+  'Spring Boot': 'spring',
+  'C#':          'csharp',
+  '.NET':        'dotnet',
+  'NestJS':      'nestjs',
+  'Express':     'express',
+  'Node.js':     'nodejs',
+  'MySQL':       'mysql',
+  'PostgreSQL':  'postgresql',
+  'Git':         'git',
+  'GitHub':      'github',
+  'Next.js':     'nextjs',
+  'React':       'react',
+  'Astro':       'astro',
+  'Angular':     'angular',
+  'Expo':        'expo',
+  'Electron':    'electron',
+  'Supabase':    'supabase',
+  'Cloudinary':  'cloudinary',
+  'Cloudflare':  'cloudflare',
+  'GSAP':        'gsap',
+  'Vite':        'vite',
+  'Prisma':      'prisma',
 };
 
 const TechIcon = ({ name }) => {
-  const getSlugs = (rawName) => {
-    const lower = rawName.toLowerCase();
-    const base = lower.replace(/\s+/g, '');
-    const variations = {
-      base,
-      simpleIcon: base.replace(/\./g, 'dot').replace(/\+/g, 'plus').replace(/#/g, 'sharp'),
-      hyphenated: lower.replace(/\s+/g, '-').replace(/\./g, '-').replace(/\+/g, 'cpp').replace(/#/g, 'sharp'),
-    };
-    if (base === 'dotnet' || base === '.net') { variations.base = 'dotnet'; variations.simpleIcon = 'dotnet'; }
-    if (base === 'c++') { variations.simpleIcon = 'cplusplus'; variations.base = 'cplusplus'; }
-    if (base === 'sql') { variations.base = 'database'; }
-    if (SI_SLUGS[variations.simpleIcon]) variations.simpleIcon = SI_SLUGS[variations.simpleIcon];
-    if (SI_SLUGS[base]) variations.simpleIcon = SI_SLUGS[base];
-    return variations;
-  };
-
-  const { base, simpleIcon, hyphenated } = getSlugs(name);
-  const sources = [
-    `https://cdn.simpleicons.org/${simpleIcon}`,
-    `https://skillicons.dev/icons?i=${base}`,
-    `https://api.iconify.design/devicon:${base}.svg`,
-    `https://api.iconify.design/logos:${base}.svg`,
-    `https://api.iconify.design/logos:${hyphenated}.svg`,
-    `https://api.iconify.design/vscode-icons:file-type-${base}.svg`,
-    `https://api.iconify.design/skill-icons:${base}.svg`,
-    `https://api.iconify.design/fa6-brands:${base}.svg`,
-    `https://api.iconify.design/mdi:${base}.svg`,
-  ];
-
-  const [currentSrcIndex, setCurrentSrcIndex] = useState(0);
-  const [hasError, setHasError] = useState(false);
-
-  const handleError = () => {
-    if (currentSrcIndex < sources.length - 1) setCurrentSrcIndex(prev => prev + 1);
-    else setHasError(true);
-  };
-
-  if (hasError) {
+  const slug = ICON_MAP[name];
+  if (!slug) {
     return (
       <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-gray-200 rounded-full border border-gray-300 shadow-sm">
         <span className="font-mono font-bold text-gray-500 text-xs">{name.substring(0, 3).toUpperCase()}</span>
       </div>
     );
   }
-
   return (
     <img
-      src={sources[currentSrcIndex]}
+      src={`/icons/${slug}.svg`}
       alt={name}
-      onError={handleError}
       loading="lazy"
-      className="w-10 h-10 md:w-12 md:h-12 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-sm"
-      key={name}
+      className="w-10 h-10 md:w-12 md:h-12 object-contain drop-shadow-sm"
     />
   );
 };

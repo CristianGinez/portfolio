@@ -255,6 +255,27 @@
       "keywords": [
         "Cloud", "CDN", "DevOps", "Infraestructura"
       ]
+    },
+    {
+      "name": "GSAP",
+      "level": "Avanzado",
+      "keywords": [
+        "Desarrollo Web", "Frontend", "Animación", "UI"
+      ]
+    },
+    {
+      "name": "Vite",
+      "level": "Intermedio",
+      "keywords": [
+        "DevOps", "Bundler", "Build Tool", "Frontend"
+      ]
+    },
+    {
+      "name": "Prisma",
+      "level": "Intermedio",
+      "keywords": [
+        "Desarrollo Web", "Backend", "ORM", "Bases de Datos"
+      ]
     }
   ],
   "languages": [
