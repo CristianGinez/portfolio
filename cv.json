@@ -145,6 +145,13 @@
         ]
     },
     {
+        "name": "NestJS",
+        "level": "Intermedio",
+        "keywords": [
+            "Desarrollo Web", "Backend", "Node Framework", "API"
+        ]
+    },
+    {
         "name": "Express",
         "level": "Intermedio",
         "keywords": [
@@ -210,9 +217,44 @@
     {
       "name": "Angular",
       "level": "Intermedio",
-        "keywords": [
-            "Desarrollo Web", "Frontend", "JavaScript Framework", "SPA"
-        ]
+      "keywords": [
+        "Desarrollo Web", "Frontend", "JavaScript Framework", "SPA"
+      ]
+    },
+    {
+      "name": "Electron",
+      "level": "Intermedio",
+      "keywords": [
+        "Desarrollo Desktop", "Frontend", "UI", "JavaScript"
+      ]
+    },
+    {
+      "name": "Expo",
+      "level": "Intermedio",
+      "keywords": [
+        "Desarrollo Móvil", "Frontend", "React Native", "UI"
+      ]
+    },
+    {
+      "name": "Supabase",
+      "level": "Intermedio",
+      "keywords": [
+        "Desarrollo Web", "Backend", "BaaS", "API"
+      ]
+    },
+    {
+      "name": "Cloudinary",
+      "level": "Intermedio",
+      "keywords": [
+        "Cloud", "Media", "CDN", "Almacenamiento de Datos"
+      ]
+    },
+    {
+      "name": "Cloudflare",
+      "level": "Básico",
+      "keywords": [
+        "Cloud", "CDN", "DevOps", "Infraestructura"
+      ]
     }
   ],
   "languages": [
@@ -238,6 +280,39 @@
   }],
   "projects": [],
   "freelance": [
+    {
+        "name": "RHINOST Trailers",
+        "isActive": true,
+        "startDate": "2026-05-03",
+        "description": "Sitio web corporativo de RHINOST, marca de trailers industriales de MOLDIMENTAL S.A.C. (Perú). Incluye catálogo de productos, portafolio de proyectos y formulario de cotización integrado con Supabase.",
+        "url": "https://rhinost.com.pe",
+        "keywords": [
+          "Astro",
+          "React",
+          "Tailwind CSS",
+          "GSAP",
+          "TypeScript",
+          "WhatsApp API"
+        ],
+        "gallery": [
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1780896242/01_hero_zv9qt4.png",
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1780896242/02_productos_home_sbntp9.png",
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1780896242/03_productos_ewwtim.png",
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1780896243/04_galeria_xryych.png",
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1780896242/05_cotizacion_fqie8l.png",
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1780896243/06_mobile_hero_ipv3mw.png",
+          "https://res.cloudinary.com/dkjaq3i9p/image/upload/v1780896243/07_mobile_productos_i6vlzy.png"
+        ],
+        "fullDetails": "Sitio estático (SSG) construido con Astro 5 + React Islands. Las páginas .astro se generan en build time; solo los componentes interactivos (Navbar móvil, formulario de cotización, animaciones GSAP, carrusel de testimonios) se montan como React Islands con client:load. El formulario de cotización llama directamente a Supabase desde el navegador usando la anon key con RLS activado en la tabla `cotizaciones`. El diseño sigue un sistema Tailwind personalizado con la paleta corporativa RHINOST (amarillo #FDD208 sobre negro #111111). El sitio cubre 8 secciones: Inicio, Sobre Nosotros, Productos, Diferenciadores, Portafolio, Homologaciones, Cotización y Galería. Incluye sitemap automático con prioridades SEO, Open Graph, canonical URLs y botón flotante de WhatsApp.",
+        "highlights": [
+          "Arquitectura SSG 100% estática — compatible con cualquier hosting estático",
+          "React Islands selectivos: solo JS donde es necesario, cero overhead en páginas estáticas",
+          "Formulario de cotización con validación en cliente y persistencia en Supabase (RLS)",
+          "Animaciones de scroll con GSAP integradas via wrapper reutilizable",
+          "Sitemap automático con prioridades SEO por ruta",
+          "Suite de tests con Vitest + React Testing Library + jsdom"
+        ]
+    },
     {
         "name": "EsLujo",
         "isActive": true,

@@ -10,6 +10,8 @@ const clientes = cv.freelance ?? [];
 const MODES = ['PROPIOS', 'CLIENTES', 'TRABAJOS'];
 const TOTAL_MODES = MODES.length;
 
+const yearOf = (dateStr) => (dateStr ? String(dateStr).slice(0, 4) : '');
+
 const SWITCH_THRESHOLD = 150;
 const MAX_DRAG_FREE    = 100;
 const RUBBER_FACTOR    = 0.20;
@@ -247,7 +249,7 @@ function ProjectCard({ project, onClick }) {
         <div className="flex justify-between items-start mb-2">
           <h3 className="text-xl md:text-2xl font-bold">{project.name}</h3>
           <span className="text-sm font-mono border border-gray-300 group-hover:border-white px-2 py-0.5 rounded-full shrink-0">
-            {new Date(project.startDate).getFullYear()}
+            {yearOf(project.startDate)}
           </span>
         </div>
         {project.url && (
@@ -273,8 +275,8 @@ function ProjectCard({ project, onClick }) {
 
 function TrabajoCard({ trabajo }) {
   const [open, setOpen] = useState(false);
-  const start = new Date(trabajo.startDate).getFullYear();
-  const end   = trabajo.endDate ? new Date(trabajo.endDate).getFullYear() : 'Presente';
+  const start = yearOf(trabajo.startDate);
+  const end   = trabajo.endDate ? yearOf(trabajo.endDate) : 'Presente';
   return (
     <div onClick={() => setOpen(!open)} style={{ touchAction: 'manipulation' }}
       className="swiper-no-swiping group border-2 border-black p-6 hover:bg-black hover:text-white transition-all duration-300 cursor-pointer flex flex-col justify-between"
@@ -319,8 +321,8 @@ export default function ProjectsSlide({ swiperRef }) {
   const swiperSlide = useSwiperSlide();
   const isActive    = swiperSlide ? swiperSlide.isActive : true;
 
-  const [mode, setMode]           = useState(0);
-  const [displayMode, setDisplay] = useState(0);
+  const [mode, setMode]           = useState(1);
+  const [displayMode, setDisplay] = useState(1);
   const [selectedProject, setSel] = useState(null);
   const contentRef = useRef(null);
   const titleRef   = useRef(null);
@@ -396,7 +398,7 @@ export default function ProjectsSlide({ swiperRef }) {
         <ProjectDetail
           project={{
             title: selectedProject.name,
-            year: new Date(selectedProject.startDate).getFullYear(),
+            year: yearOf(selectedProject.startDate),
             tech: selectedProject.keywords.join(' / '),
             link: selectedProject.url,
             description: selectedProject.description,
